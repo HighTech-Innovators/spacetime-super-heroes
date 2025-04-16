@@ -33,7 +33,6 @@ async fn main() {
         .init();
 
         let db = loop {
-            info!("Starting>>>>>>>>");
             let db = connect_to_client(&spacetime_db, &spacetime_db_url);
             match db {
                 Ok(db) => break db,
@@ -44,10 +43,7 @@ async fn main() {
           
     let db = Box::leak(Box::new(db));
 
-    info!("About to run");
     tokio::spawn(db.run_async());
-    // db.run_async().await.unwrap();
-
     let identity = loop {
         if let Some(id) = *IDENTITY.lock().unwrap() {
             break id
@@ -56,12 +52,11 @@ async fn main() {
         sleep(Duration::from_millis(500)).await;
     };
     let (sender,receiver) = tokio::sync::broadcast::channel::<FightResult>(100);
-    run_job(&db, identity, sender);
+    run_job(db, identity, sender);
     
-    let mut count = 0;
-    let server_id = identity.clone();
+    // let mut count = 0;
     let app = Router::new().route("/random_fight", post(perform_fight))
-        .with_state(AppState { identity: identity.clone(), db, receiver: Arc::new(receiver)});
+        .with_state(AppState { identity, db, receiver: Arc::new(receiver)});
 
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8082").await.unwrap();
@@ -93,7 +88,7 @@ async fn perform_fight(State(state): State<AppState>)->Json<ClientFightResult> {
     let random_id = Identity::from_byte_array(id_block);
     let mut receiver = state.receiver.resubscribe();
 
-    state.db.reducers.execute_random_fight(state.identity, random_id.clone()).unwrap();
+    state.db.reducers.execute_random_fight(state.identity, random_id).unwrap();
     let fight_result = loop {
         let result = receiver.recv().await.unwrap();
         if random_id == result.request_id {

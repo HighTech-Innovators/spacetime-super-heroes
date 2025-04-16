@@ -4,13 +4,14 @@ use sqlx::prelude::FromRow;
 use crate::generated::Location;
 
 #[derive(sqlx::Type, Debug)]
+#[sqlx(rename_all = "UPPERCASE")]
 pub enum SqlLocationType {
-    CITY,
-    PLANET,
-    PLACE,
-    ISLAND,
-    COUNTRY,
-    MOON,
+    City,
+    Planet,
+    Place,
+    Island,
+    Country,
+    Moon,
 }
 
 #[derive(FromRow, Debug, Serialize, Deserialize, Clone, Default)]

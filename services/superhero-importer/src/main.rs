@@ -1,6 +1,5 @@
 use std::{env, time::Duration};
 
-use axum::{extract::State, routing::get, Router};
 use generated::{add_hero, add_location, add_villain, DbConnection, Hero, Location, Villain};
 use log::{info, warn};
 use sql::{heroes::SqlHero, location::SqlLocation, villains::SqlVillain};
@@ -11,16 +10,6 @@ pub mod generated;
 pub mod sql;
 
 const DB_NAME: &str = "superhero-server";
-
-#[derive(Clone)]
-struct AppState {
-    db: &'static DbConnection,
-    heroes_db_url: String,
-    villains_db_url: String,
-    locations_db_url: String,
-    // spacetime_db: String,
-    // spacetime_db_url: String,
-}
 
 
 #[tokio::main]
@@ -46,28 +35,22 @@ async fn main() {
     let db = Box::leak(Box::new(db));
     tokio::spawn(db.run_async());
 
-    import_heroes(&db, &heroes_db_url).await;
-    import_villains(&db, &villains_db_url).await;
-    import_locations(&db, &locations_db_url).await;
+    import_heroes(db, &heroes_db_url).await;
+    import_villains(db, &villains_db_url).await;
+    import_locations(db, &locations_db_url).await;
 
-    // let app = Router::new().route("/import", get(perform_import))
-    //     .with_state(AppState { db, heroes_db_url, villains_db_url, locations_db_url });
-
-    // run our app with hyper, listening globally on port 3000
-    // let listener = tokio::net::TcpListener::bind("0.0.0.0:8083").await.unwrap();
-    // axum::serve(listener, app).await.unwrap();
-    // tokio::spawn(async_handle);
+    // give the outbound requests 
     sleep(Duration::from_secs(2)).await;
 
 }
 
-async fn perform_import(State(state): State<AppState>)->String {
-    import_heroes(&state.db, &state.heroes_db_url).await;
-    import_villains(&state.db, &state.villains_db_url).await;
-    import_locations(&state.db, &state.locations_db_url).await;
+// async fn perform_import(State(state): State<AppState>)->String {
+//     import_heroes(&state.db, &state.heroes_db_url).await;
+//     import_villains(&state.db, &state.villains_db_url).await;
+//     import_locations(&state.db, &state.locations_db_url).await;
 
-    "ok".to_owned()
-}
+//     "ok".to_owned()
+// }
 
 async fn import_heroes(db: &DbConnection, url: &str) {
     let pool = PgPoolOptions::new()

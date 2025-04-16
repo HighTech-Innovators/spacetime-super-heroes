@@ -52,23 +52,23 @@ pub struct ClientFightLocation {
 #[derive(Serialize)]
 #[serde(rename_all="camelCase")]
 pub enum ClientLocationType {
-    CITY,
-    PLANET,
-    PLACE,
-    ISLAND,
-    COUNTRY,
-    MOON,
+    City,
+    Planet,
+    Place,
+    Island,
+    Country,
+    Moon,
 }
 
 impl From<LocationType> for ClientLocationType {
     fn from(value: LocationType) -> Self {
          match value {
-            LocationType::City => ClientLocationType::CITY,
-            LocationType::Planet => ClientLocationType::PLANET,
-            LocationType::Place => ClientLocationType::PLACE,
-            LocationType::Island => ClientLocationType::ISLAND,
-            LocationType::Country => ClientLocationType::COUNTRY,
-            LocationType::Moon => ClientLocationType::MOON,
+            LocationType::City => ClientLocationType::City,
+            LocationType::Planet => ClientLocationType::Planet,
+            LocationType::Place => ClientLocationType::Place,
+            LocationType::Island => ClientLocationType::Island,
+            LocationType::Country => ClientLocationType::Country,
+            LocationType::Moon => ClientLocationType::Moon,
         }
     }
 }

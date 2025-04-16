@@ -1,4 +1,4 @@
-use spacetimedb::{Identity, SpacetimeType};
+use spacetimedb::{Identity, SpacetimeType, Timestamp};
 
 #[spacetimedb::table(name = hero, public)]
 pub struct Hero {
@@ -75,7 +75,7 @@ pub struct FightResult {
     #[index(btree)]
     pub identity: Identity,
     pub request_id: Identity,
-    // pub fight_date: Timestamp, // use timestamp data structure?
+    pub fight_date: Timestamp, // use timestamp data structure?
     pub winner_name: String,
     pub winner_level: i32,
     pub winner_powers: String,

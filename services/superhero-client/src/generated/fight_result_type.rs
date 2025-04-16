@@ -13,6 +13,7 @@ pub struct FightResult {
     pub id: u64,
     pub identity: __sdk::Identity,
     pub request_id: __sdk::Identity,
+    pub fight_date: __sdk::Timestamp,
     pub winner_name: String,
     pub winner_level: i32,
     pub winner_powers: String,
