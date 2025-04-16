@@ -1,0 +1,4 @@
+[workspace]
+resolver = "2"
+members = ["services/*"]
+exclude = ["spacetime-modules"]

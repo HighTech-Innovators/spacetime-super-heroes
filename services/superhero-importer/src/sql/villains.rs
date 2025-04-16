@@ -1,0 +1,31 @@
+use serde::{Deserialize, Serialize};
+use sqlx::prelude::FromRow;
+
+use crate::generated::Villain;
+
+#[derive(FromRow, Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct SqlVillain {
+    pub id: i64,
+    pub level: i32,
+    pub name: String,
+    #[sqlx(rename = "othername")]
+    // #[serde(skip_serializing_if = "String::is_empty")]
+    pub other_name: Option<String>,
+    pub picture: String,
+    pub powers: String,
+}
+
+impl From<SqlVillain> for Villain {
+    fn from(value: SqlVillain) -> Self {
+        Self {
+            space_id: 0,
+            id: value.id,
+            level: value.level,
+            name: value.name,
+            other_name: value.other_name,
+            picture: value.picture,
+            powers: value.powers,
+        }
+    }
+}

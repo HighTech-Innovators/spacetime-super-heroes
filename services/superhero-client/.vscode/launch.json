@@ -1,0 +1,47 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "env": {"RUST_LOG": "info"},
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'superhero-client'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=superhero-client",
+                    "--package=superhero-client"
+                ],
+                "filter": {
+                    "name": "superhero-client",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "env": {"RUST_LOG": "info"},
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'superhero-client'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=superhero-client",
+                    "--package=superhero-client"
+                ],
+                "filter": {
+                    "name": "superhero-client",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
