@@ -1,7 +1,10 @@
 version: "3"
 services:
   spacetimedb-importer:
-    image: superhero/spacetimedb-importer
+    build: 
+      dockerfile: Dockerfile
+      target: superhero-importer
+      context: .
     ports:
       - "8080:3000"
     environment:
@@ -21,7 +24,10 @@ services:
         condition: service_healthy
 
   spacetimedb-client:
-    image: superhero/spacetimedb-client
+    build: 
+      dockerfile: Dockerfile
+      target: superhero-client
+      context: .
     ports:
       - "8082:8082"
     depends_on:
