@@ -53,10 +53,15 @@ async fn main() {
 // }
 
 async fn import_heroes(db: &DbConnection, url: &str) {
-    let pool = PgPoolOptions::new()
+    let pool = loop {
+        match PgPoolOptions::new()
         .connect(url)
-        .await
-        .unwrap();
+        .await {
+            Ok(pool) => break pool,
+            Err(_) => {},
+        }
+        tokio::time::sleep(Duration::from_millis(100)).await
+    };
     query_as::<_, SqlHero>("select * from Hero")
         .fetch_all(&pool)
         .await
@@ -73,10 +78,15 @@ async fn import_heroes(db: &DbConnection, url: &str) {
 }
 
 async fn import_villains(db: &DbConnection, url: &str) {
-    let pool = PgPoolOptions::new()
+    let pool = loop {
+        match PgPoolOptions::new()
         .connect(url)
-        .await
-        .unwrap();
+        .await {
+            Ok(pool) => break pool,
+            Err(_) => {},
+        }
+        tokio::time::sleep(Duration::from_millis(100)).await
+    };
     query_as::<_, SqlVillain>("select * from Villain")
         .fetch_all(&pool)
         .await
@@ -93,11 +103,18 @@ async fn import_villains(db: &DbConnection, url: &str) {
 }
 
 async fn import_locations(db: &DbConnection, url: &str) {
-    let pool = MySqlPoolOptions::new()
+    let pool = loop {
+        match MySqlPoolOptions::new()
         .max_connections(30)
         .connect(url)
-        .await
-        .unwrap();
+        .await {
+            Ok(pool) => break pool,
+            Err(_) => {
+                warn!("Location database not up yet")
+            },
+        }
+        tokio::time::sleep(Duration::from_millis(100)).await
+    };
     query_as::<_, SqlLocation>("select * from locations")
         .fetch_all(&pool)
         .await
