@@ -10,7 +10,7 @@ use crate::{generated::{execute_random_fight, DbConnection, FightResult, FightTa
 pub struct SpacetimeConnectionInstance {
     // db_name: String,
     // db_url: String,
-    pub(crate) connection: DbConnection,
+    pub(crate) connection: &'static DbConnection,
     pub(crate) identity: Option<Identity>,
     receiver: Receiver<FightResult>,
 
@@ -58,11 +58,13 @@ impl SpacetimeConnectionInstance {
                 Err(_) => {},
             }
         };
+        let connection = Box::leak(Box::new(connection));
         let mut instance = Self {
             connection: connection,
             identity: None,
             receiver: receiver,
         };
+        tokio::spawn(connection.run_async());
         info!("Instance created");
         instance.run_job(identity_receiver,sender).await;
         info!("Job started");
@@ -73,6 +75,9 @@ impl SpacetimeConnectionInstance {
         self.connection.frame_tick()
     }
 
+    pub fn disconnect(&self) {
+        self.connection.disconnect().unwrap();
+    }
  
 pub async fn perform_fight(&self)->ClientFightResult {
     let mut rng = IsaacRng::from_os_rng();
