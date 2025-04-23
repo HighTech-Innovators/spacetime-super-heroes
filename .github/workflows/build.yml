@@ -19,6 +19,9 @@ jobs:
       - name: Build docker compose
         run: |
           docker compose build
+      - name: Build docker compose
+        run: |
+          docker compose up
       - name: Cardamon
         run: |
           cardamon run spacetime
