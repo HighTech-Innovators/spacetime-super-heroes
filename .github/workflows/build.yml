@@ -1,0 +1,31 @@
+name: Test Docker on GitHub Actions
+
+on:
+  pull_request:
+  push:
+    branches: 
+      - main
+      - docker-compose-build
+
+jobs:
+  cardamon:
+    runs-on: ubuntu-latest
+    container:
+      image: flyaruu/cardamon_cicd:0.2
+      options: --privileged --shm-size=2g
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build docker compose
+        run: |
+          docker compose build
+      - name: Cardamon
+        run: |
+          cardamon run rust
+      - name: Log
+        run: |
+          cat .stderr
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cardamon-metrics
+          path: cardamon.db
