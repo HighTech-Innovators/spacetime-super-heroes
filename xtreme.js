@@ -15,8 +15,8 @@ export const options = {
       timeUnit: '1s',
       preAllocatedVUs: 50,
       stages: [
-        { target: 1500, duration: '10s' },
-        { target: 1500, duration: '50s' },
+        { target: 1200, duration: '10s' },
+        { target: 1200, duration: '50s' },
       ]
     },
   },
