@@ -14,7 +14,7 @@ down = "docker compose down"
 redirect.to = "file"
 process.type = "docker"
 process.containers = ["spacetimedb-client", "spacetimedb"]
-startup_grace = "20s"
+startup_grace = "30s"
 
 [[scenario]]
 name = "k6-spacetime-high"
