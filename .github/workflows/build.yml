@@ -19,10 +19,10 @@ jobs:
       - name: Build docker compose
         run: |
           docker compose build
-      - name: Run docker compose
-        run: |
-          echo "path: ${PWD}"
-          docker compose up
+      # - name: Run docker compose
+      #   run: |
+      #     echo "path: ${PWD}"
+      #     docker compose up
       - name: Cardamon
         run: |
           cardamon run spacetime
