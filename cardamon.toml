@@ -11,10 +11,10 @@ curve = [30.508760345993128,0.0730308567638932,20.451103066868207,-5.08379885619
 name = "fights-spacetime"
 up = "docker compose up --force-recreate -d"
 down = "docker compose down"
-redirect.to = "file"
+redirect.to = "parent"
 process.type = "docker"
 process.containers = ["spacetimedb-client", "spacetimedb"]
-startup_grace = "30s"
+startup_grace = "20s"
 
 [[scenario]]
 name = "k6-spacetime-high"
