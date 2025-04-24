@@ -19,8 +19,9 @@ jobs:
       - name: Build docker compose
         run: |
           docker compose build
-      - name: Build docker compose
+      - name: Run docker compose
         run: |
+          echo "path: ${PWD}"
           docker compose up
       - name: Cardamon
         run: |
