@@ -25,6 +25,7 @@ jobs:
       #     docker compose up
       - name: Cardamon
         run: |
+          export LOG_FILTER=debug
           cardamon run spacetime
       - name: Log
         if: always()
