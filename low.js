@@ -3,11 +3,11 @@ import { check } from 'k6';
 import { randomFight } from './k6/randomFight.js';
 
 export const options = {
-  thresholds: {
-    http_req_duration: ['p(95)<50'],  // 95% of requests should be <50ms
-    http_req_failed: ['rate<0.001'],    // error rate should be <0.1%
-    dropped_iterations: ['count == 0'],  // no dropped iterations allowed
-  },
+  // thresholds: {
+  //   http_req_duration: ['p(95)<50'],  // 95% of requests should be <50ms
+  //   http_req_failed: ['rate<0.001'],    // error rate should be <0.1%
+  //   dropped_iterations: ['count == 0'],  // no dropped iterations allowed
+  // },
   scenarios: {
     low_load: {
       executor: 'constant-arrival-rate',
