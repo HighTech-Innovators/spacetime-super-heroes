@@ -1,5 +1,6 @@
 services:
   spacetimedb-importer:
+    container_name: spacetime-importer
     build: 
       dockerfile: Dockerfile
       target: superhero-importer
@@ -16,6 +17,7 @@ services:
       spacetimedb:
         condition: service_healthy
   spacetime-modules:
+    container_name: spacetime-modules
     build: spacetime-modules
     command: sh -c "echo 'ABOUT TO DEPLOY' && ./spacetimedb-cli publish --anonymous -s 'http://spacetimedb:3000' --project-path superhero-server -y superhero-server"
     depends_on:
