@@ -34,7 +34,7 @@ jobs:
       #     docker compose up
       - name: Cardamon
         run: |
-          export LOG_FILTER=debug
+          export LOG_FILTER=info
           cardamon run spacetime
       - uses: actions/upload-artifact@v4
         with:
