@@ -10,6 +10,8 @@ on:
 jobs:
   cardamon:
     runs-on: ubuntu-latest
+    env:
+      DOCKER_SOCK: unix:///var/run/docker.sock 
     container:
       image: flyaruu/cardamon_cicd:0.2.9
       options: --privileged --shm-size=2g
