@@ -23,6 +23,7 @@ services:
         condition: service_healthy
 
   spacetimedb-client:
+    container_name: spacetimedb-client
     build: 
       dockerfile: Dockerfile
       target: superhero-client
@@ -38,6 +39,7 @@ services:
     # command: sleep 5 && /spacetimedb-client
   spacetimedb:
     image: clockworklabs/spacetime
+    container_name: spacetimedb
     command: start
     ports:
       - "3000:3000"
