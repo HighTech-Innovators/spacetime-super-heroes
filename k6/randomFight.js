@@ -9,7 +9,8 @@ export function randomFight() {
     };
     
     var fight_response = http.post("http://localhost:8082/random_fight", json_post_header);
-
+    console.log("Fight result:");
+    console.log(JSON.stringify(fight_response));
     check(fight_response, {
         'fight result is 200': (r) => r.status === 200
     })

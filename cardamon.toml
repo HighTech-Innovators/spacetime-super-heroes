@@ -53,7 +53,7 @@ processes = ["fights-spacetime"]
 
 [[observation]]
 name = "spacetime"
-scenarios = ["k6-spacetime-low","k6-spacetime-high","k6-spacetime-none"]
+scenarios = ["k6-spacetime-low"]
 
 [[observation]]
 name = "spacetime-max"
