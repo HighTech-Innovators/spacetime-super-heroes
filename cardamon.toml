@@ -24,6 +24,13 @@ iterations = 3
 processes = ["fights-spacetime"]
 
 [[scenario]]
+name = "k6-spacetime-curl"
+desc = "Curl test"
+command = "curl -v -X POST http://localhost:8082/random_fight"
+iterations = 3
+processes = ["fights-spacetime"]
+
+[[scenario]]
 name = "k6-spacetime-low"
 desc = "Low load test."
 command = "k6 run -v low.js"
@@ -53,7 +60,7 @@ processes = ["fights-spacetime"]
 
 [[observation]]
 name = "spacetime"
-scenarios = ["k6-spacetime-low"]
+scenarios = ["k6-spacetime-curl", "k6-spacetime-low"]
 
 [[observation]]
 name = "spacetime-max"
