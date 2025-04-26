@@ -26,7 +26,7 @@ processes = ["fights-spacetime"]
 [[scenario]]
 name = "k6-spacetime-low"
 desc = "Low load test."
-command = "k6 run low.js"
+command = "k6 run -v low.js"
 iterations = 3
 processes = ["fights-spacetime"]
 

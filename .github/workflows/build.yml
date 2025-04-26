@@ -18,20 +18,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Test run some docker
-        run: |
-          docker run ubuntu
-      - name: Test docker
-        run: |
-          docker ps -a
-
       - name: Build docker compose
         run: |
           docker compose build
-      # - name: Run docker compose
-      #   run: |
-      #     echo "path: ${PWD}"
-      #     docker compose up
       - name: Cardamon
         run: |
           export LOG_FILTER=info
