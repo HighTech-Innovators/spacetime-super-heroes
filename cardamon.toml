@@ -9,7 +9,7 @@ curve = [30.508760345993128,0.0730308567638932,20.451103066868207,-5.08379885619
 #"event-statistics-java21" "fights-kafka" "rest-narration-java21" "apicurio", "apicurio", "ui-super-heroes"
 [[process]]
 name = "fights-spacetime"
-up = "docker compose up --force-recreate -d"
+up = "docker compose up --force-recreate"
 down = "docker compose down"
 redirect.to = "file"
 process.type = "docker"
