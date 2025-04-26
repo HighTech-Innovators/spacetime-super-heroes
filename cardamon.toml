@@ -26,7 +26,7 @@ processes = ["fights-spacetime"]
 [[scenario]]
 name = "k6-spacetime-curl"
 desc = "Curl test"
-command = "curl -v -X POST http://localhost:8082/random_fight"
+command = "curl -v -X POST http://127.0.0.1:8082/random_fight"
 iterations = 3
 processes = ["fights-spacetime"]
 
