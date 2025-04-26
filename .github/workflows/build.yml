@@ -35,7 +35,17 @@ jobs:
       - name: Cardamon
         run: |
           export LOG_FILTER=info
+          touch .stderr
+          touch .stdout
           cardamon run spacetime
+      - name: Log
+        if: always()
+        run: |
+          cat .stderr
+      - name: Log
+        if: always()
+        run: |
+          cat .stdout
       - uses: actions/upload-artifact@v4
         with:
           name: cardamon-metrics
