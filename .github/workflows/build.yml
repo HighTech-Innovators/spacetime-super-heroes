@@ -23,6 +23,8 @@ jobs:
           docker compose build
       - name: Cardamon
         run: |
+          cat /etc/hosts
+          cat /etc/hostname
           export LOG_FILTER=info
           touch .stderr
           touch .stdout
