@@ -1,8 +1,7 @@
-use std::{env, sync::Arc};
+use std::env;
 
 use axum::{extract::State, routing::post, Json, Router};
-use deadpool::managed::{Pool, PoolConfig};
-use fight_instance::SpacetimeConnectionInstance;
+use deadpool::managed::Pool;
 use log::info;
 use pool::InstancePool;
 use types::ClientFightResult;
@@ -22,12 +21,14 @@ struct AppState {
 
 #[tokio::main]
 async fn main() {
-    let spacetime_db = env::var("SPACETIME_DB").unwrap_or(DB_NAME.to_owned());
-    let spacetime_db_url = env::var("SPACETIME_DB_URL").unwrap_or("http://localhost:3000".to_owned());
-
     env_logger::builder()
         .filter_level(log::LevelFilter::Info)
         .init();
+
+    info!("Starting client");
+    let spacetime_db = env::var("SPACETIME_DB").unwrap_or(DB_NAME.to_owned());
+    let spacetime_db_url = env::var("SPACETIME_DB_URL").unwrap_or("http://localhost:3000".to_owned());
+
 
     // let instance = SpacetimeConnectionInstance::new(spacetime_db, spacetime_db_url).await;
     let instance_pool = InstancePool {
@@ -35,10 +36,9 @@ async fn main() {
         db_url: spacetime_db_url,
     };
     let state = AppState { pool: Pool::builder(instance_pool).max_size(10).build().unwrap() };
-
     let app = Router::new().route("/random_fight", post(perform_fight))
         .with_state(state);
-
+    info!("Setup complete, service http");
     // run our app with hyper, listening globally on port 8082
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8082").await.unwrap();
     axum::serve(listener, app).await.unwrap();

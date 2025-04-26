@@ -20,12 +20,9 @@ impl Manager for InstancePool {
 
     async fn recycle(
         &self,
-        obj: &mut Self::Type,
+        _obj: &mut Self::Type,
         _metrics: &deadpool::managed::Metrics,
     ) -> deadpool::managed::RecycleResult<Self::Error> {
-        // info!("Recycling connection");
-        // obj.disconnect();
-        // info!("Recycled connection");
         Ok(())
     }
 }
