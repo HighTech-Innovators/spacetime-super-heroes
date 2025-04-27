@@ -39,8 +39,8 @@ async fn main() {
     let app = Router::new().route("/random_fight", post(perform_fight))
         .with_state(state);
     info!("Setup complete, service http");
-    // run our app with hyper, listening globally on port 8082
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:8082").await.unwrap();
+    // run our app with hyper, listening globally on port 9082
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:9082").await.unwrap();
     axum::serve(listener, app).await.unwrap();
 
 }

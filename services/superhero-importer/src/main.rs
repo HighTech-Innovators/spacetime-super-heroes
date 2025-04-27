@@ -39,7 +39,7 @@ async fn main() {
     import_villains(db, &villains_db_url).await;
     import_locations(db, &locations_db_url).await;
 
-    // give the outbound requests 
+    // give the outbound requests a moment to finish
     sleep(Duration::from_secs(2)).await;
 
 }
@@ -75,6 +75,7 @@ async fn import_heroes(db: &DbConnection, url: &str) {
             // sleep(Duration::from_millis(3));        
             println!("Hero: {} inserted. Id: {}", name, id);
         });
+    pool.close().await;
 }
 
 async fn import_villains(db: &DbConnection, url: &str) {
@@ -100,6 +101,7 @@ async fn import_villains(db: &DbConnection, url: &str) {
             std::thread::sleep(Duration::from_millis(3));        
             println!("Villain: {} inserted. Id: {}", name, id);
         });
+    pool.close().await;
 }
 
 async fn import_locations(db: &DbConnection, url: &str) {
@@ -128,6 +130,7 @@ async fn import_locations(db: &DbConnection, url: &str) {
             std::thread::sleep(Duration::from_millis(3));        
             println!("Location: {} inserted. Id: {}", name, id);
         });
+    pool.close().await;
 }
 
 
