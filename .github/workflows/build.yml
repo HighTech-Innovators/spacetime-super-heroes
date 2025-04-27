@@ -29,6 +29,7 @@ jobs:
           export LOG_FILTER=info
           touch .stderr
           touch .stdout
+          docker ps -a
           cardamon run spacetime
       - name: Log
         if: always()
