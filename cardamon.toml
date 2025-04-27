@@ -26,8 +26,8 @@ processes = ["fights-spacetime"]
 [[scenario]]
 name = "k6-spacetime-curl"
 desc = "Curl test"
-command = "curl -v -X POST http://127.0.0.1:8082/random_fight"
-iterations = 3
+command = "curl -v -X POST http://host.docker.internal:8082/random_fight"
+iterations = 5
 processes = ["fights-spacetime"]
 
 [[scenario]]
