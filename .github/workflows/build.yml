@@ -26,7 +26,7 @@ jobs:
         run: |
           cat /etc/hosts
           cat /etc/hostname
-          export LOG_FILTER=info
+          export LOG_FILTER=debug
           touch .stderr
           touch .stdout
           docker ps -a
