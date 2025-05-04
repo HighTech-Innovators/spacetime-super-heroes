@@ -117,6 +117,17 @@ async fn import_locations(db: &DbConnection, url: &str) {
         }
         tokio::time::sleep(Duration::from_millis(100)).await
     };
+    loop {
+        match pool.try_acquire() {
+            Some(connection) => {
+                connection.close().await.unwrap();
+                break;
+            },
+            None => {
+                tokio::time::sleep(Duration::from_millis(100)).await
+            },
+        }
+    }
     query_as::<_, SqlLocation>("select * from locations")
         .fetch_all(&pool)
         .await
