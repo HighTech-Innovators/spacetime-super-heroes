@@ -88,3 +88,9 @@ services:
       MARIADB_SKIP_TEST_DB: yes
     volumes:
       - ${PWD}/database/locations-db/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
