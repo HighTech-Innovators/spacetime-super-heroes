@@ -44,14 +44,6 @@ async fn main() {
 
 }
 
-// async fn perform_import(State(state): State<AppState>)->String {
-//     import_heroes(&state.db, &state.heroes_db_url).await;
-//     import_villains(&state.db, &state.villains_db_url).await;
-//     import_locations(&state.db, &state.locations_db_url).await;
-
-//     "ok".to_owned()
-// }
-
 async fn import_heroes(db: &DbConnection, url: &str) {
     let pool = loop {
         match PgPoolOptions::new()
@@ -89,7 +81,9 @@ async fn import_heroes(db: &DbConnection, url: &str) {
 }
 
 async fn test_mysql_pool(pool: &sqlx::Pool<MySql>, test_query: &str)->Result<bool,sqlx::Error> {
-    let row: (u64,) = query_as(test_query).fetch_one(pool).await?;
+    info!("Testing mysql pool");
+    let row: (i64,) = query_as(test_query).fetch_one(pool).await?;
+    info!("Checking mysql row: {:?}", row);
     Ok(row.0 > 0)
 }
 
