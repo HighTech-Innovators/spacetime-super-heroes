@@ -56,12 +56,12 @@ async fn import_heroes(db: &DbConnection, url: &str) {
     };
     info!("Hero db connected");
     loop {
-        if let Ok(true) = test_postgres_pool(&pool, "select count(*) as c from hero").await {
+        if let Ok(true) = test_postgres_pool(&pool, "select count(*) as c from Hero").await {
             info!("Hero db ready");
             break;
         } else {
             warn!("Hero db not ready");
-            tokio::time::sleep(Duration::from_millis(100)).await
+            tokio::time::sleep(Duration::from_millis(1000)).await
         }
     }
     query_as::<_, SqlHero>("select * from Hero")
