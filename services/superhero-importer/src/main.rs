@@ -3,7 +3,7 @@ use std::{env, time::Duration};
 use generated::{add_hero, add_location, add_villain, DbConnection, Hero, Location, Villain};
 use log::{info, warn};
 use sql::{heroes::SqlHero, location::SqlLocation, villains::SqlVillain};
-use sqlx::{mysql::MySqlPoolOptions, pool::PoolConnection, postgres::PgPoolOptions, query, query_as, Executor, MySql, Postgres};
+use sqlx::{mysql::MySqlPoolOptions, postgres::PgPoolOptions, query_as, MySql, Postgres};
 use tokio::time::sleep;
 
 pub mod generated;
@@ -64,7 +64,7 @@ async fn import_heroes(db: &DbConnection, url: &str) {
     };
     info!("Hero db connected");
     loop {
-        if let Ok(true) = test_postgres_pool(&pool, "select count(*) as c from heroes").await {
+        if let Ok(true) = test_postgres_pool(&pool, "select count(*) as c from hero").await {
             break;
         } else {
             tokio::time::sleep(Duration::from_millis(100)).await
@@ -107,7 +107,7 @@ async fn import_villains(db: &DbConnection, url: &str) {
         tokio::time::sleep(Duration::from_millis(100)).await
     };
     loop {
-            if let Ok(true) = test_postgres_pool(&pool, "select count(*) as c from villains").await {
+            if let Ok(true) = test_postgres_pool(&pool, "select count(*) as c from villain").await {
             break;
         } else {
             tokio::time::sleep(Duration::from_millis(100)).await
