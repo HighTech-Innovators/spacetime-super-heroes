@@ -88,10 +88,10 @@ async fn test_mysql_pool(pool: &sqlx::Pool<MySql>, test_query: &str)->Result<boo
 }
 
 async fn test_postgres_pool(pool: &sqlx::Pool<Postgres>, test_query: &str)->Result<bool,sqlx::Error> {
-    let tables = sqlx::query("SELECT * FROM information_schema.tables").fetch_all(pool).await?;
-    for table in tables {
-        info!("Table: {:?}", table);
-    }
+    // let tables = sqlx::query("SELECT * FROM information_schema.tables").fetch_all(pool).await?;
+    // for table in tables {
+    //     info!("Table: {:?}", table);
+    // }
     let row: (i64,) = query_as(test_query).fetch_one(pool).await?;
     Ok(row.0 > 0)
 }
