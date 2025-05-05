@@ -65,8 +65,10 @@ async fn import_heroes(db: &DbConnection, url: &str) {
     info!("Hero db connected");
     loop {
         if let Ok(true) = test_postgres_pool(&pool, "select count(*) as c from hero").await {
+            info!("Hero db ready");
             break;
         } else {
+            warn!("Hero db not ready");
             tokio::time::sleep(Duration::from_millis(100)).await
         }
     }
@@ -107,10 +109,12 @@ async fn import_villains(db: &DbConnection, url: &str) {
         tokio::time::sleep(Duration::from_millis(100)).await
     };
     loop {
-            if let Ok(true) = test_postgres_pool(&pool, "select count(*) as c from villain").await {
+        if let Ok(true) = test_postgres_pool(&pool, "select count(*) as c from Villain").await {
+            info!("Villain db ready");
             break;
         } else {
-            tokio::time::sleep(Duration::from_millis(100)).await
+            warn!("Villain db not ready");
+            tokio::time::sleep(Duration::from_millis(1000)).await
         }
     }
     query_as::<_, SqlVillain>("select * from Villain")
@@ -144,30 +148,13 @@ async fn import_locations(db: &DbConnection, url: &str) {
     };
     loop {
         if let Ok(true) = test_mysql_pool(&pool, "select count(*) as c from locations").await {
+            info!("Location db ready");
             break;
         } else {
-            tokio::time::sleep(Duration::from_millis(100)).await
+            warn!("Location db not ready");
+            tokio::time::sleep(Duration::from_millis(1000)).await
         }
     }    
-    loop {
-        match pool.try_acquire() {
-            Some(connection) => {
-                connection.close().await.unwrap();
-                break;
-            },
-            None => {
-                tokio::time::sleep(Duration::from_millis(100)).await
-            },
-        }
-    }
-    tokio::time::sleep(Duration::from_secs(30)).await;
-    // loop {
-    //     let count_row = query("select count(*) as c from locations")
-    //         .fetch_one(&pool)
-    //         .await
-    //         .map(|row| row.get::<i64, _>("c"))
-    //         .unwrap();
-    // }
     query_as::<_, SqlLocation>("select * from locations")
         .fetch_all(&pool)
         .await
