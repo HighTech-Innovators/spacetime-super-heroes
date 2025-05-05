@@ -3,7 +3,7 @@ use std::{env, time::Duration};
 use generated::{add_hero, add_location, add_villain, DbConnection, Hero, Location, Villain};
 use log::{info, warn};
 use sql::{heroes::SqlHero, location::SqlLocation, villains::SqlVillain};
-use sqlx::{mysql::MySqlPoolOptions, postgres::PgPoolOptions, query, query_as};
+use sqlx::{mysql::MySqlPoolOptions, pool::PoolConnection, postgres::PgPoolOptions, query, query_as, Executor, MySql, Postgres};
 use tokio::time::sleep;
 
 pub mod generated;
@@ -62,6 +62,14 @@ async fn import_heroes(db: &DbConnection, url: &str) {
         }
         tokio::time::sleep(Duration::from_millis(100)).await
     };
+    info!("Hero db connected");
+    loop {
+        if let Ok(true) = test_postgres_pool(&pool, "select count(*) as c from heroes").await {
+            break;
+        } else {
+            tokio::time::sleep(Duration::from_millis(100)).await
+        }
+    }
     query_as::<_, SqlHero>("select * from Hero")
         .fetch_all(&pool)
         .await
@@ -78,6 +86,16 @@ async fn import_heroes(db: &DbConnection, url: &str) {
     // pool.close().await;
 }
 
+async fn test_mysql_pool(pool: &sqlx::Pool<MySql>, test_query: &str)->Result<bool,sqlx::Error> {
+    let row: (u64,) = query_as(test_query).fetch_one(pool).await?;
+    Ok(row.0 > 0)
+}
+
+async fn test_postgres_pool(pool: &sqlx::Pool<Postgres>, test_query: &str)->Result<bool,sqlx::Error> {
+    let row: (i64,) = query_as(test_query).fetch_one(pool).await?;
+    Ok(row.0 > 0)
+}
+
 async fn import_villains(db: &DbConnection, url: &str) {
     let pool = loop {
         match PgPoolOptions::new()
@@ -88,6 +106,13 @@ async fn import_villains(db: &DbConnection, url: &str) {
         }
         tokio::time::sleep(Duration::from_millis(100)).await
     };
+    loop {
+            if let Ok(true) = test_postgres_pool(&pool, "select count(*) as c from villains").await {
+            break;
+        } else {
+            tokio::time::sleep(Duration::from_millis(100)).await
+        }
+    }
     query_as::<_, SqlVillain>("select * from Villain")
         .fetch_all(&pool)
         .await
@@ -117,6 +142,13 @@ async fn import_locations(db: &DbConnection, url: &str) {
         }
         tokio::time::sleep(Duration::from_millis(100)).await
     };
+    loop {
+        if let Ok(true) = test_mysql_pool(&pool, "select count(*) as c from locations").await {
+            break;
+        } else {
+            tokio::time::sleep(Duration::from_millis(100)).await
+        }
+    }    
     loop {
         match pool.try_acquire() {
             Some(connection) => {
