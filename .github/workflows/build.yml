@@ -27,6 +27,9 @@ jobs:
           cat /etc/hosts
           cat /etc/hostname
           export LOG_FILTER=debug
+          echo "Current directory: ${PWD}"
+          export PWD=${GITHUB_WORKSPACE}
+          echo "New directory: ${PWD}"
           touch .stderr
           touch .stdout
           docker ps -a
