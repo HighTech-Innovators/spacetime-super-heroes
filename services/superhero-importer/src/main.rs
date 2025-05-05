@@ -3,7 +3,7 @@ use std::{env, time::Duration};
 use generated::{add_hero, add_location, add_villain, DbConnection, Hero, Location, Villain};
 use log::{info, warn};
 use sql::{heroes::SqlHero, location::SqlLocation, villains::SqlVillain};
-use sqlx::{mysql::MySqlPoolOptions, postgres::PgPoolOptions, query_as};
+use sqlx::{mysql::MySqlPoolOptions, postgres::PgPoolOptions, query, query_as};
 use tokio::time::sleep;
 
 pub mod generated;
@@ -128,6 +128,14 @@ async fn import_locations(db: &DbConnection, url: &str) {
             },
         }
     }
+    tokio::time::sleep(Duration::from_secs(30)).await;
+    // loop {
+    //     let count_row = query("select count(*) as c from locations")
+    //         .fetch_one(&pool)
+    //         .await
+    //         .map(|row| row.get::<i64, _>("c"))
+    //         .unwrap();
+    // }
     query_as::<_, SqlLocation>("select * from locations")
         .fetch_all(&pool)
         .await
