@@ -14,12 +14,18 @@ env:
 jobs:
   cardamon:
     runs-on: ubuntu-latest
-    # env:
-      # DOCKER_SOCK: unix:///var/run/docker.sock 
-    container:
-      image: cruizba/ubuntu-dind:latest
-      options: --privileged --shm-size=2g --add-host=host.docker.internal:host-gateway
     steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # (Optional) If you need BuildKit / buildx features:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install Docker Compose plugin
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose-plugin curl
       - name: Install k6
         run: |
           echo "Installing k6 for architecture: $ARCHITECTURE" \
@@ -37,9 +43,33 @@ jobs:
           && tar xvfz cardamon.tgz \
           && mv cardamon /usr/local/bin/cardamon \
           && rm -rf cardamon.tgz cardamon/
-      
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Build & start all services
+        run: |
+          # Use the built-in Docker Compose V2 syntax:
+          docker compose up --build -d
+
+      # - name: Run load test
+      #   run: |
+      #     docker compose run --rm loadtest
+
+      # - name: Tear down services
+      #   if: always()
+      #   run: |
+      #     docker compose down      
+      # - name: Install dependencies
+      #   run: |
+      #     apt-get update \
+      #     && apt-get install -y \
+      #       curl \
+      #       jq \
+      #       docker-compose
+
+      # - name: Install Docker Compose
+      #   run: |
+      #     curl -fsSL \
+      #       "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-$(uname -s)-$(uname -m)" \
+      #       -o /usr/local/bin/docker-compose
+      #     chmod +x /usr/local/bin/docker-compose
       - name: Build docker compose
         run: |
           docker compose build
