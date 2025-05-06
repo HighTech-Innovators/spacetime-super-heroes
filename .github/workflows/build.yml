@@ -6,6 +6,10 @@ on:
     branches: 
       - main
       - docker-compose-build
+env:
+  ARCHITECTURE: amd64
+  K6_VERSION: "0.58.0"
+  CARDAMON_VERSION: "0.2.18"
 
 jobs:
   cardamon:
@@ -13,9 +17,27 @@ jobs:
     # env:
       # DOCKER_SOCK: unix:///var/run/docker.sock 
     container:
-      image: flyaruu/cardamon_cicd:0.2.18
+      image: cruizba/ubuntu-dind:latest
       options: --privileged --shm-size=2g --add-host=host.docker.internal:host-gateway
     steps:
+      - name: Install k6
+        run: |
+          echo "Installing k6 for architecture: $ARCHITECTURE" \
+          && echo "URL: https://github.com/grafana/k6/releases/download/v${K6_VERSION}/k6-v${K6_VERSION}-linux-${ARCHITECTURE}.tar.gz" \
+          && curl -L https://github.com/grafana/k6/releases/download/v${K6_VERSION}/k6-v${K6_VERSION}-linux-${ARCHITECTURE}.tar.gz -o k6.tgz \
+          && tar xvfz k6.tgz \
+          && mv k6-v${K6_VERSION}-linux-${ARCHITECTURE}/k6 /usr/local/bin/k6 \
+          && chmod +x /usr/local/bin/k6 \
+          && rm -rf k6.zip k6-v${K6_VERSION}-linux-${ARCHITECTURE} \
+          && rm -rf k6-v${K6_VERSION}-linux-${ARCHITECTURE}
+      - name: Install Cardamon
+        run: |
+          echo "Installing Cardamon for architecture: $ARCHITECTURE" \
+          && curl -L https://github.com/flyaruu/cardamon-core/releases/download/v${CARDAMON_VERSION}/cardamon-x86_64-unknown-linux-gnu.tgz -o cardamon.tgz \
+          && tar xvfz cardamon.tgz \
+          && mv cardamon /usr/local/bin/cardamon \
+          && rm -rf cardamon.tgz cardamon/
+      
       - name: Checkout
         uses: actions/checkout@v4
       - name: Build docker compose
