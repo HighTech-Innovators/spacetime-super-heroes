@@ -53,7 +53,7 @@ services:
       timeout: 1m
       retries: 20
 
-  heroes-db:
+      heroes-db:
     image: postgres:16
     container_name: heroes-db
     ports:
@@ -63,9 +63,9 @@ services:
       POSTGRES_PASSWORD: superman
       POSTGRES_DB: heroes_database
     volumes:
-      - ./database/heroes-db/init:/docker-entrypoint-initdb.d:ro
+      - ${PWD}/database/heroes-db/init/heroes.sql:/docker-entrypoint-initdb.d/init.sql:ro
 
-  villains-db:
+      villains-db:
     image: postgres:16
     container_name: villains-db
     ports:
@@ -75,7 +75,7 @@ services:
       POSTGRES_PASSWORD: superman
       POSTGRES_DB: villains_database
     volumes:
-      - ./database/villains-db/init:/docker-entrypoint-initdb.d:ro
+      - ${PWD}/database/villains-db/init/villains.sql:/docker-entrypoint-initdb.d/init.sql:ro
   locations-db:
     image: mariadb:11.5
     container_name: locations-db
@@ -88,10 +88,11 @@ services:
       MARIADB_ROOT_PASSWORD: locations
       MARIADB_SKIP_TEST_DB: yes
     volumes:
-      - ./database/locations-db/init:/docker-entrypoint-initdb.d:ro
+      - ${PWD}/database/locations-db/init/initialize-tables.sql:/docker-entrypoint-initdb.d/1-init-tables.sql:ro
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       start_period: 10s
       interval: 10s
       timeout: 5s
       retries: 3
+      
