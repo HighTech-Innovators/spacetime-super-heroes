@@ -56,15 +56,15 @@ jobs:
         run: |
           export LOG_FILTER=info
           cardamon run none
-      - name: Cardamon None
+      - name: Cardamon Low
         run: |
           export LOG_FILTER=info
           cardamon run low
-      - name: Cardamon None
+      - name: Cardamon Max
         run: |
           export LOG_FILTER=info
-          cardamon run high
-      - name: Cardamon None
+          cardamon run max
+      - name: Cardamon Xtreme
         run: |
           export LOG_FILTER=info
           cardamon run xtreme

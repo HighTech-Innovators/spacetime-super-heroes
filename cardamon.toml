@@ -52,6 +52,10 @@ iterations = 3
 processes = ["fights-spacetime"]
 
 [[observation]]
+name = "none"
+scenarios = ["none"]
+
+[[observation]]
 name = "low"
 scenarios = ["low"]
 
