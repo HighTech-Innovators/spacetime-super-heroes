@@ -63,9 +63,7 @@ services:
       POSTGRES_PASSWORD: superman
       POSTGRES_DB: heroes_database
     volumes:
-      - type: bind
-        source: ./database/heroes-db/init/heroes.sql
-        target: /docker-entrypoint-initdb.d/init.sql
+      - ./database/heroes-db/init/heroes.sql:/docker-entrypoint-initdb.d/init.sql:ro
 
   villains-db:
     image: postgres:16
@@ -77,9 +75,7 @@ services:
       POSTGRES_PASSWORD: superman
       POSTGRES_DB: villains_database
     volumes:
-      - type: bind
-        source: ./database/villains-db/init/villains.sql
-        target: /docker-entrypoint-initdb.d/init.sql
+      - ./database/villains-db/init/villains.sql:/docker-entrypoint-initdb.d/init.sql:ro
   locations-db:
     image: mariadb:11.5
     container_name: locations-db
@@ -92,9 +88,7 @@ services:
       MARIADB_ROOT_PASSWORD: locations
       MARIADB_SKIP_TEST_DB: yes
     volumes:
-      - type: bind
-        source: ./database/locations-db/init/1-init-tables.sql
-        target: /docker-entrypoint-initdb.d/init.sql
+      - ./database/locations-db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       start_period: 10s
