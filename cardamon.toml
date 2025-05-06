@@ -17,55 +17,48 @@ process.containers = ["spacetimedb-client", "spacetimedb"]
 startup_grace = "50s"
 
 [[scenario]]
-name = "k6-spacetime-high"
+name = "high"
 desc = "High test for 60s"
 command = "k6 run high.js"
 iterations = 3
 processes = ["fights-spacetime"]
 
 [[scenario]]
-name = "k6-spacetime-curl"
-desc = "Curl test"
-command = "curl -v -X POST http://127.0.0.1:9082/random_fight"
-iterations = 5
-processes = ["fights-spacetime"]
-
-[[scenario]]
-name = "k6-spacetime-low"
+name = "low"
 desc = "Low load test."
 command = "./wait.sh"
 iterations = 3
 processes = ["fights-spacetime"]
 
 [[scenario]]
-name = "k6-spacetime-none"
+name = "none"
 desc = "No load test."
 command = "k6 run none.js"
 iterations = 3
 processes = ["fights-spacetime"]
 
 [[scenario]]
-name = "k6-spacetime-max"
+name = "max"
 desc = "No load test."
 command = "k6 run max.js"
 iterations = 3
 processes = ["fights-spacetime"]
 
 [[scenario]]
-name = "k6-spacetime-xtreme"
+name = "xtreme"
 desc = "No load test."
 command = "k6 run xtreme.js"
 iterations = 3
 processes = ["fights-spacetime"]
 
 [[observation]]
-name = "spacetime"
-scenarios = ["k6-spacetime-low"]
+name = "low"
+scenarios = ["low"]
 
 [[observation]]
-name = "spacetime-max"
-scenarios = ["k6-spacetime-max"]
+name = "max"
+scenarios = ["max"]
 
 [[observation]]
-name = "spacetime-xtreme"
-scenarios = ["k6-spacetime-xtreme"]
+name = "xtreme"
+scenarios = ["xtreme"]

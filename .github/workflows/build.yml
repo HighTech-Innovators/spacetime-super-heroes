@@ -43,50 +43,33 @@ jobs:
           && tar xvfz cardamon.tgz \
           && mv cardamon /usr/local/bin/cardamon \
           && rm -rf cardamon.tgz cardamon/
-      - name: Build & start all services
-        run: |
-          # Use the built-in Docker Compose V2 syntax:
-          docker compose up --build -d
+      # - name: Build & start all services
+      #   run: |
+      #     # Use the built-in Docker Compose V2 syntax:
+      #     docker compose up --build -d
 
-      # - name: Run load test
-      #   run: |
-      #     docker compose run --rm loadtest
-
-      # - name: Tear down services
-      #   if: always()
-      #   run: |
-      #     docker compose down      
-      # - name: Install dependencies
-      #   run: |
-      #     apt-get update \
-      #     && apt-get install -y \
-      #       curl \
-      #       jq \
-      #       docker-compose
-
-      # - name: Install Docker Compose
-      #   run: |
-      #     curl -fsSL \
-      #       "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-$(uname -s)-$(uname -m)" \
-      #       -o /usr/local/bin/docker-compose
-      #     chmod +x /usr/local/bin/docker-compose
       - name: Build docker compose
         run: |
           docker compose build
           docker compose pull
-      - name: Cardamon
+      - name: Cardamon None
         run: |
-          cat /etc/hosts
-          cat /etc/hostname
-          export LOG_FILTER=debug
-          echo "Current directory: ${PWD}"
-          export PWD=${GITHUB_WORKSPACE}
-          echo "New directory: ${PWD}"
-          touch .stderr
-          touch .stdout
-          docker ps -a
-          cardamon run spacetime
-      # - name: Log
+          export LOG_FILTER=info
+          cardamon run none
+      - name: Cardamon None
+        run: |
+          export LOG_FILTER=info
+          cardamon run low
+      - name: Cardamon None
+        run: |
+          export LOG_FILTER=info
+          cardamon run high
+      - name: Cardamon None
+        run: |
+          export LOG_FILTER=info
+          cardamon run xtreme
+    
+          # - name: Log
       #   if: always()
       #   run: |
       #     cat .stderr
