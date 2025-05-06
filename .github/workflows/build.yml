@@ -25,7 +25,7 @@ jobs:
       - name: Install curl
         run: |
           sudo apt-get update
-          sudo apt-get install -y docker-compose-plugin curl
+          sudo apt-get install -y curl
       - name: Install k6
         run: |
           echo "Installing k6 for architecture: $ARCHITECTURE" \
