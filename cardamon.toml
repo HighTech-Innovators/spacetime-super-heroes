@@ -19,28 +19,28 @@ startup_grace = "50s"
 [[scenario]]
 name = "high"
 desc = "High test for 60s"
-command = "k6 run high.js"
+command = "k6 run k6/high.js"
 iterations = 3
 processes = ["fights-spacetime"]
 
 [[scenario]]
 name = "low"
 desc = "Low load test."
-command = "6 run low.js"
+command = "6 run k6/low.js"
 iterations = 3
 processes = ["fights-spacetime"]
 
 [[scenario]]
 name = "none"
 desc = "No load test."
-command = "k6 run none.js"
+command = "k6 run k6/none.js"
 iterations = 3
 processes = ["fights-spacetime"]
 
 [[scenario]]
 name = "max"
 desc = "No load test."
-command = "k6 run max.js"
+command = "k6 run k6/max.js"
 iterations = 3
 processes = ["fights-spacetime"]
 
