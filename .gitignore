@@ -2,3 +2,4 @@ target
 cardamon.db
 .stdout
 .stderr
+k6_*.json

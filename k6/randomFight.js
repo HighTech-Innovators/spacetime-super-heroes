@@ -1,6 +1,8 @@
 import http from 'k6/http';
 import { check } from 'k6';
 
+const host = __ENV.K6_HOST || "http://localhost:8080"
+
 export function randomFight() {
     const json_post_header = {
         headers: {
@@ -8,7 +10,7 @@ export function randomFight() {
         },
     };
     
-    var fight_response = http.post("http://127.0.0.1:9082/random_fight", json_post_header);
+    var fight_response = http.post(host + "/random_fight", json_post_header);
     //console.log(JSON.stringify(fight_response));
     check(fight_response, {
         'fight result is 200': (r) => r.status === 200

@@ -26,28 +26,24 @@ jobs:
       - name: Install curl
         run: |
           sudo apt-get update
-          sudo apt-get install -y curl
+          sudo apt-get install -y curl jq
       - name: Install k6
         run: |
           echo "Installing k6 for architecture: $ARCHITECTURE" \
-          && echo "URL: https://github.com/grafana/k6/releases/download/v${K6_VERSION}/k6-v${K6_VERSION}-linux-${ARCHITECTURE}.tar.gz" \
-          && curl -L https://github.com/grafana/k6/releases/download/v${K6_VERSION}/k6-v${K6_VERSION}-linux-${ARCHITECTURE}.tar.gz -o k6.tgz \
-          && tar xvfz k6.tgz \
-          && mv k6-v${K6_VERSION}-linux-${ARCHITECTURE}/k6 /usr/local/bin/k6 \
-          && chmod +x /usr/local/bin/k6 \
-          && rm -rf k6.zip k6-v${K6_VERSION}-linux-${ARCHITECTURE} \
-          && rm -rf k6-v${K6_VERSION}-linux-${ARCHITECTURE}
+            && echo "URL: https://github.com/grafana/k6/releases/download/v${K6_VERSION}/k6-v${K6_VERSION}-linux-${ARCHITECTURE}.tar.gz" \
+            && curl -L https://github.com/grafana/k6/releases/download/v${K6_VERSION}/k6-v${K6_VERSION}-linux-${ARCHITECTURE}.tar.gz -o k6.tgz \
+            && tar xvfz k6.tgz \
+            && mv k6-v${K6_VERSION}-linux-${ARCHITECTURE}/k6 /usr/local/bin/k6 \
+            && chmod +x /usr/local/bin/k6 \
+            && rm -rf k6.zip k6-v${K6_VERSION}-linux-${ARCHITECTURE} \
+            && rm -rf k6-v${K6_VERSION}-linux-${ARCHITECTURE}
       - name: Install Cardamon
         run: |
           echo "Installing Cardamon for architecture: $ARCHITECTURE" \
-          && curl -L https://github.com/flyaruu/cardamon-core/releases/download/v${CARDAMON_VERSION}/cardamon-x86_64-unknown-linux-gnu.tgz -o cardamon.tgz \
-          && tar xvfz cardamon.tgz \
-          && mv cardamon /usr/local/bin/cardamon \
-          && rm -rf cardamon.tgz cardamon/
-      # - name: Build & start all services
-      #   run: |
-      #     # Use the built-in Docker Compose V2 syntax:
-      #     docker compose up --build -d
+            && curl -L https://github.com/flyaruu/cardamon-core/releases/download/v${CARDAMON_VERSION}/cardamon-x86_64-unknown-linux-gnu.tgz -o cardamon.tgz \
+            && tar xvfz cardamon.tgz \
+            && mv cardamon /usr/local/bin/cardamon \
+            && rm -rf cardamon.tgz cardamon/
 
       - name: Build docker compose
         run: |
@@ -61,16 +57,13 @@ jobs:
         run: |
           cardamon stats >stats.txt
           cat stats.txt
-      #   if: always()
-      #   run: |
-      #     cat .stderr
-      # - name: Log
-      #   if: always()
-      #   run: |
-      #     cat .stdout
       - uses: actions/upload-artifact@v4
         with:
           name: cardamon-metrics
           path: |
             cardamon.db
             stats.txt
+            k6_1.json
+            k6_10.json
+            k6_100.json
+            k6_200.json
