@@ -26,7 +26,7 @@ processes = ["fights-spacetime"]
 [[scenario]]
 name = "low"
 desc = "Low load test."
-command = "./wait.sh"
+command = "6 run low.js"
 iterations = 3
 processes = ["fights-spacetime"]
 
@@ -44,13 +44,6 @@ command = "k6 run max.js"
 iterations = 3
 processes = ["fights-spacetime"]
 
-[[scenario]]
-name = "xtreme"
-desc = "No load test."
-command = "k6 run xtreme.js"
-iterations = 3
-processes = ["fights-spacetime"]
-
 [[observation]]
 name = "none"
 scenarios = ["none"]
@@ -60,9 +53,16 @@ name = "low"
 scenarios = ["low"]
 
 [[observation]]
+name = "high"
+scenarios = ["high"]
+
+
+[[observation]]
 name = "max"
 scenarios = ["max"]
 
 [[observation]]
-name = "xtreme"
-scenarios = ["xtreme"]
+name = "all"
+scenarios = ["none", "low", "high", "max"]
+
+

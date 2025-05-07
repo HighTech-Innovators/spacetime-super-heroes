@@ -1,6 +1,6 @@
 import http from 'k6/http';
 import { check } from 'k6';
-import { randomFight } from './k6/randomFight.js';
+import { randomFight } from './randomFight.js';
 
 export const options = {
   // thresholds: {
@@ -9,15 +9,13 @@ export const options = {
   //   dropped_iterations: ['count == 0'],  // no dropped iterations allowed
   // },
   scenarios: {
-    ramp_high_load: {
-      executor: 'ramping-arrival-rate',
-      startRate: 10,
-      timeUnit: '1s',
-      preAllocatedVUs: 50,
-      stages: [
-        { target: 1200, duration: '10s' },
-        { target: 1200, duration: '50s' },
-      ]
+    low_load: {
+      executor: 'constant-arrival-rate',
+      duration: '50s',
+      rate: 1,
+      timeUnit: '1h',
+      preAllocatedVUs: 20,
+      maxVUs: 200,
     },
   },
 };

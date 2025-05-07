@@ -14,6 +14,7 @@ env:
 jobs:
   cardamon:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -55,21 +56,7 @@ jobs:
       - name: Cardamon None
         run: |
           export LOG_FILTER=info
-          cardamon run none
-      - name: Cardamon Low
-        run: |
-          export LOG_FILTER=info
-          cardamon run low
-      - name: Cardamon Max
-        run: |
-          export LOG_FILTER=info
-          cardamon run max
-      - name: Cardamon Xtreme
-        run: |
-          export LOG_FILTER=info
-          cardamon run xtreme
-    
-          # - name: Log
+          cardamon run all
       #   if: always()
       #   run: |
       #     cat .stderr
