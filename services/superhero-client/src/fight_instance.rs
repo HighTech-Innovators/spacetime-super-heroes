@@ -23,16 +23,13 @@ impl SpacetimeConnectionInstance {
         let (sender, receiver) = tokio::sync::broadcast::channel::<FightResult>(100);
         let (connection, identity_receiver) = loop {
             let (identity_sender, identity_receiver) = tokio::sync::oneshot::channel::<Identity>();
-            match Self::connect_to_client(&db_name, &db_url, identity_sender) {
-                Ok(connection) => break (connection, identity_receiver),
-                Err(_) => {}
-            }
+            if let Ok(connection) = Self::connect_to_client(&db_name, &db_url, identity_sender) { break (connection, identity_receiver) }
         };
         let connection = Box::leak(Box::new(connection));
         let mut instance = Self {
-            connection: connection,
+            connection,
             identity: None,
-            receiver: receiver,
+            receiver,
         };
         tokio::spawn(connection.run_async());
         info!("Instance created");
@@ -52,13 +49,13 @@ impl SpacetimeConnectionInstance {
             .reducers
             .execute_random_fight(self.identity.unwrap(), random_id)
             .unwrap();
-        let fight_result = loop {
+        
+        loop {
             let result = receiver.recv().await.unwrap();
             if random_id == result.request_id {
                 break result.into();
             }
-        };
-        fight_result
+        }
     }
 
     // pub async fn

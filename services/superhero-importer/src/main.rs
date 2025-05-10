@@ -48,10 +48,7 @@ async fn main() {
 
 async fn import_heroes(db: &DbConnection, url: &str) {
     let pool = loop {
-        match PgPoolOptions::new().connect(url).await {
-            Ok(pool) => break pool,
-            Err(_) => {}
-        }
+        if let Ok(pool) = PgPoolOptions::new().connect(url).await { break pool }
         tokio::time::sleep(Duration::from_millis(100)).await
     };
     info!("Hero db connected");
@@ -101,10 +98,7 @@ async fn test_postgres_pool(
 
 async fn import_villains(db: &DbConnection, url: &str) {
     let pool = loop {
-        match PgPoolOptions::new().connect(url).await {
-            Ok(pool) => break pool,
-            Err(_) => {}
-        }
+        if let Ok(pool) = PgPoolOptions::new().connect(url).await { break pool }
         tokio::time::sleep(Duration::from_millis(100)).await
     };
     loop {
