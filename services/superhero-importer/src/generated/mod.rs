@@ -26,17 +26,17 @@ pub mod villain_table;
 pub mod villain_type;
 pub mod winner_type;
 
-pub use add_event_reducer::{add_event, set_flags_for_add_event, AddEventCallbackId};
+pub use add_event_reducer::{AddEventCallbackId, add_event, set_flags_for_add_event};
 pub use add_fight_result_reducer::{
-    add_fight_result, set_flags_for_add_fight_result, AddFightResultCallbackId,
+    AddFightResultCallbackId, add_fight_result, set_flags_for_add_fight_result,
 };
-pub use add_hero_reducer::{add_hero, set_flags_for_add_hero, AddHeroCallbackId};
-pub use add_location_reducer::{add_location, set_flags_for_add_location, AddLocationCallbackId};
-pub use add_villain_reducer::{add_villain, set_flags_for_add_villain, AddVillainCallbackId};
+pub use add_hero_reducer::{AddHeroCallbackId, add_hero, set_flags_for_add_hero};
+pub use add_location_reducer::{AddLocationCallbackId, add_location, set_flags_for_add_location};
+pub use add_villain_reducer::{AddVillainCallbackId, add_villain, set_flags_for_add_villain};
 pub use event_table::*;
 pub use event_type::Event;
 pub use execute_random_fight_reducer::{
-    execute_random_fight, set_flags_for_execute_random_fight, ExecuteRandomFightCallbackId,
+    ExecuteRandomFightCallbackId, execute_random_fight, set_flags_for_execute_random_fight,
 };
 pub use fight_location_type::FightLocation;
 pub use fight_result_type::FightResult;
@@ -44,10 +44,10 @@ pub use fight_table::*;
 pub use hero_table::*;
 pub use hero_type::Hero;
 pub use identity_connected_reducer::{
-    identity_connected, set_flags_for_identity_connected, IdentityConnectedCallbackId,
+    IdentityConnectedCallbackId, identity_connected, set_flags_for_identity_connected,
 };
 pub use identity_disconnected_reducer::{
-    identity_disconnected, set_flags_for_identity_disconnected, IdentityDisconnectedCallbackId,
+    IdentityDisconnectedCallbackId, identity_disconnected, set_flags_for_identity_disconnected,
 };
 pub use location_table::*;
 pub use location_type::Location;
@@ -497,21 +497,21 @@ impl __sdk::SubscriptionHandle for SubscriptionHandle {
 /// either a [`DbConnection`] or an [`EventContext`] and operate on either.
 pub trait RemoteDbContext:
     __sdk::DbContext<
-    DbView = RemoteTables,
-    Reducers = RemoteReducers,
-    SetReducerFlags = SetReducerFlags,
-    SubscriptionBuilder = __sdk::SubscriptionBuilder<RemoteModule>,
->
+        DbView = RemoteTables,
+        Reducers = RemoteReducers,
+        SetReducerFlags = SetReducerFlags,
+        SubscriptionBuilder = __sdk::SubscriptionBuilder<RemoteModule>,
+    >
 {
 }
 impl<
-        Ctx: __sdk::DbContext<
+    Ctx: __sdk::DbContext<
             DbView = RemoteTables,
             Reducers = RemoteReducers,
             SetReducerFlags = SetReducerFlags,
             SubscriptionBuilder = __sdk::SubscriptionBuilder<RemoteModule>,
         >,
-    > RemoteDbContext for Ctx
+> RemoteDbContext for Ctx
 {
 }
 

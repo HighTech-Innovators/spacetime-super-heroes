@@ -26,6 +26,13 @@ pub struct SqlLocation {
 impl From<SqlLocation> for Location {
     fn from(value: SqlLocation) -> Self {
         // TODO implement LocationType
-        Location { space_id: 0, id: value.id, description: value.description, name: value.name, picture: value.picture, location_type: crate::generated::LocationType::City }
+        Location {
+            space_id: 0,
+            id: value.id,
+            description: value.description,
+            name: value.name,
+            picture: value.picture,
+            location_type: crate::generated::LocationType::City,
+        }
     }
 }

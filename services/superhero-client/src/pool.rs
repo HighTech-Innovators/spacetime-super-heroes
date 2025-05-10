@@ -9,9 +9,9 @@ pub(crate) struct InstancePool {
 }
 
 impl Manager for InstancePool {
-    type Type=SpacetimeConnectionInstance;
+    type Type = SpacetimeConnectionInstance;
 
-    type Error=String;
+    type Error = String;
 
     async fn create(&self) -> Result<Self::Type, Self::Error> {
         info!("Created connection");

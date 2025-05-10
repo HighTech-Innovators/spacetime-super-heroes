@@ -4,7 +4,7 @@ use spacetimedb_sdk::Identity;
 use crate::generated::{FightLocation, FightResult, LocationType, Winner};
 
 #[derive(Serialize)]
-#[serde(rename_all="camelCase")]
+#[serde(rename_all = "camelCase")]
 pub struct ClientFightResult {
     pub id: u64,
     pub identity: Identity,
@@ -24,7 +24,7 @@ pub struct ClientFightResult {
 }
 
 #[derive(Serialize)]
-#[serde(rename_all="camelCase")]
+#[serde(rename_all = "camelCase")]
 pub enum ClientWinner {
     Heroes,
     Villains,
@@ -40,7 +40,7 @@ impl From<Winner> for ClientWinner {
 }
 
 #[derive(Serialize)]
-#[serde(rename_all="camelCase")]
+#[serde(rename_all = "camelCase")]
 pub struct ClientFightLocation {
     pub id: i64,
     pub description: String,
@@ -50,7 +50,7 @@ pub struct ClientFightLocation {
 }
 
 #[derive(Serialize)]
-#[serde(rename_all="camelCase")]
+#[serde(rename_all = "camelCase")]
 pub enum ClientLocationType {
     City,
     Planet,
@@ -62,7 +62,7 @@ pub enum ClientLocationType {
 
 impl From<LocationType> for ClientLocationType {
     fn from(value: LocationType) -> Self {
-         match value {
+        match value {
             LocationType::City => ClientLocationType::City,
             LocationType::Planet => ClientLocationType::Planet,
             LocationType::Place => ClientLocationType::Place,
