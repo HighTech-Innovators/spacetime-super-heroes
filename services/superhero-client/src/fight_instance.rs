@@ -19,8 +19,8 @@ pub struct SpacetimeConnectionInstance {
 }
 
 impl SpacetimeConnectionInstance {
-    pub async fn new(db_name: String, db_url: String) -> Self {
-        let (sender, receiver) = tokio::sync::broadcast::channel::<FightResult>(100);
+    pub async fn new(db_name: &str, db_url: &str) -> Self {
+        let (sender, receiver) = tokio::sync::broadcast::channel::<FightResult>(10000);
         let (connection, identity_receiver) = loop {
             let (identity_sender, identity_receiver) = tokio::sync::oneshot::channel::<Identity>();
             if let Ok(connection) = Self::connect_to_client(&db_name, &db_url, identity_sender) { break (connection, identity_receiver) }
@@ -38,7 +38,7 @@ impl SpacetimeConnectionInstance {
         instance
     }
 
-    pub async fn perform_fight(&self) -> ClientFightResult {
+    pub async fn perform_fight(&self) -> anyhow::Result<ClientFightResult> {
         let mut rng = IsaacRng::from_os_rng();
         let mut id_block = [0_u8; 32];
         rng.fill_bytes(&mut id_block);
@@ -47,13 +47,12 @@ impl SpacetimeConnectionInstance {
         let mut receiver = self.receiver.resubscribe();
         self.connection
             .reducers
-            .execute_random_fight(self.identity.unwrap(), random_id)
-            .unwrap();
+            .execute_random_fight(self.identity.unwrap(), random_id)?;
         
         loop {
-            let result = receiver.recv().await.unwrap();
+            let result = receiver.recv().await?;
             if random_id == result.request_id {
-                break result.into();
+                break Ok(result.into());
             }
         }
     }
@@ -89,8 +88,10 @@ impl SpacetimeConnectionInstance {
             .db
             .fight()
             .on_insert(move |_ctx, fight_result| {
+                // info!("Fight result: {:?}", fight_result);
                 sender.send(fight_result.clone()).unwrap();
             });
+            
     }
 
     fn connect_to_client(

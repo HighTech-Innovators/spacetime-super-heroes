@@ -3,7 +3,7 @@ use log::info;
 
 use crate::fight_instance::SpacetimeConnectionInstance;
 
-pub(crate) struct InstancePool {
+pub struct InstancePool {
     pub db_name: String,
     pub db_url: String,
 }
@@ -15,7 +15,7 @@ impl Manager for InstancePool {
 
     async fn create(&self) -> Result<Self::Type, Self::Error> {
         info!("Created connection");
-        Ok(SpacetimeConnectionInstance::new(self.db_name.clone(), self.db_url.clone()).await)
+        Ok(SpacetimeConnectionInstance::new(&self.db_name, &self.db_url).await)
     }
 
     async fn recycle(

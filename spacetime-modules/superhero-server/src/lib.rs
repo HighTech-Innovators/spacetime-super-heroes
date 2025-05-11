@@ -123,7 +123,7 @@ pub fn execute_random_fight(ctx: &ReducerContext, identity: Identity, request_id
 
     info!("Random hero: {}", hero.name);
     let villain = random_villain(ctx);
-    info!("Random villain: {}", hero.name);
+    info!("Random villain: {}", villain.name);
     let location = random_location(ctx);
     info!("Random location: {}", location.name);
     let result = execute_fight(identity, request_id, hero, villain, location, ctx.timestamp);

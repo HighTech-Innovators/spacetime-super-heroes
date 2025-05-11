@@ -3,13 +3,7 @@ use std::env;
 use axum::{Json, Router, extract::State, routing::post};
 use deadpool::managed::Pool;
 use log::info;
-use pool::InstancePool;
-use types::ClientFightResult;
-
-mod fight_instance;
-mod generated;
-mod pool;
-mod types;
+use superhero_client::{pool::InstancePool, types::ClientFightResult};
 
 const DB_NAME: &str = "superhero-server";
 
@@ -47,6 +41,5 @@ async fn main() {
 #[axum::debug_handler]
 async fn perform_fight(State(state): State<AppState>) -> Json<ClientFightResult> {
     let instance = state.pool.get().await.unwrap();
-    let result = instance.perform_fight().await;
-    Json(result)
+    Json(instance.perform_fight().await.unwrap())
 }

@@ -19,7 +19,7 @@ services:
   spacetime-modules:
     container_name: spacetime-modules
     build: spacetime-modules
-    command: sh -c "echo 'ABOUT TO DEPLOY' && ./spacetimedb-cli publish --anonymous -s 'http://spacetimedb:3000' --project-path superhero-server -y superhero-server"
+    command: sh -c "echo 'ABOUT TO DEPLOY' && ./spacetimedb-cli login --server-issued-login 'http://spacetimedb:3000' && ./spacetimedb-cli publish -s 'http://spacetimedb:3000' --project-path superhero-server -y superhero-server && ./spacetimedb-cli logs -s 'http://spacetimedb:3000' -f superhero-server"
     depends_on:
       spacetimedb:
         condition: service_healthy
