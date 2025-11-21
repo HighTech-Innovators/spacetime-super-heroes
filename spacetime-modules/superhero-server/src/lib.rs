@@ -41,7 +41,14 @@ pub fn add_location(ctx: &ReducerContext, location: Location) -> Result<(), Stri
     Ok(())
 }
 
-
+#[spacetimedb::reducer]
+pub fn clear_fights(ctx: &ReducerContext) -> Result<(), String> {
+    for row in ctx.db.fight().iter() {
+        ctx.db.fight().delete(row);
+    }
+    info!("All fights cleared");
+    Ok(())
+}
 
 pub fn all_heroes(ctx: &ReducerContext) -> Vec<Hero> {
     ctx.db.hero().iter().collect()

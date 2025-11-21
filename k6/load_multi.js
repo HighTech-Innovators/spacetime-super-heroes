@@ -28,3 +28,9 @@ export const options = {
 export default () => {
   var fight_result = randomFights(__ENV.BATCH_SIZE ? parseInt(__ENV.BATCH_SIZE) : 500);
 }
+
+
+export function teardown(data) {
+  const host = __ENV.K6_HOST || "http://localhost:8080";
+  var fight_response = http.delete(host + "/fights");
+}

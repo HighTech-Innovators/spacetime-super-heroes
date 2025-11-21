@@ -11,6 +11,7 @@ pub mod add_fight_result_reducer;
 pub mod add_hero_reducer;
 pub mod add_location_reducer;
 pub mod add_villain_reducer;
+pub mod clear_fights_reducer;
 pub mod event_table;
 pub mod event_type;
 pub mod execute_random_fight_reducer;
@@ -36,6 +37,7 @@ pub use add_fight_result_reducer::{
 pub use add_hero_reducer::{add_hero, set_flags_for_add_hero, AddHeroCallbackId};
 pub use add_location_reducer::{add_location, set_flags_for_add_location, AddLocationCallbackId};
 pub use add_villain_reducer::{add_villain, set_flags_for_add_villain, AddVillainCallbackId};
+pub use clear_fights_reducer::{clear_fights, set_flags_for_clear_fights, ClearFightsCallbackId};
 pub use event_table::*;
 pub use event_type::Event;
 pub use execute_random_fight_reducer::{
@@ -85,6 +87,7 @@ pub enum Reducer {
     AddVillain {
         villain: Villain,
     },
+    ClearFights,
     ExecuteRandomFight {
         identity: __sdk::Identity,
         request_id: __sdk::Identity,
@@ -110,6 +113,7 @@ impl __sdk::Reducer for Reducer {
             Reducer::AddHero { .. } => "add_hero",
             Reducer::AddLocation { .. } => "add_location",
             Reducer::AddVillain { .. } => "add_villain",
+            Reducer::ClearFights => "clear_fights",
             Reducer::ExecuteRandomFight { .. } => "execute_random_fight",
             Reducer::ExecuteRandomFights { .. } => "execute_random_fights",
             Reducer::IdentityConnected => "identity_connected",
@@ -148,6 +152,13 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
             "add_villain" => Ok(
                 __sdk::parse_reducer_args::<add_villain_reducer::AddVillainArgs>(
                     "add_villain",
+                    &value.args,
+                )?
+                .into(),
+            ),
+            "clear_fights" => Ok(
+                __sdk::parse_reducer_args::<clear_fights_reducer::ClearFightsArgs>(
+                    "clear_fights",
                     &value.args,
                 )?
                 .into(),

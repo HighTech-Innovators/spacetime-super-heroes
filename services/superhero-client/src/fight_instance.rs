@@ -6,8 +6,7 @@ use tokio::sync::broadcast::{Receiver, Sender};
 
 use crate::{
     generated::{
-        DbConnection, FightResult, FightTableAccess, HeroTableAccess, LocationTableAccess,
-        VillainTableAccess, execute_random_fight, execute_random_fights,
+        DbConnection, FightResult, FightTableAccess, HeroTableAccess, LocationTableAccess, VillainTableAccess, clear_fights, execute_random_fight, execute_random_fights
     },
     types::ClientFightResult,
 };
@@ -78,6 +77,13 @@ impl SpacetimeConnectionInstance {
                 }
             }
         }
+    }
+
+    pub async fn clear_fights(&self) -> anyhow::Result<()> {
+        self.connection
+            .reducers
+            .clear_fights()?;
+        Ok(())
     }
 
 

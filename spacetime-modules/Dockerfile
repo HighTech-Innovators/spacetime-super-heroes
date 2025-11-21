@@ -1,4 +1,5 @@
 FROM rust:1.91.1 AS build
+ARG TARGETPLATFORM
 WORKDIR /build
 RUN case "${TARGETPLATFORM}" in \
         "linux/amd64") export BINARY_URL="https://github.com/clockworklabs/SpacetimeDB/releases/download/v1.8.0/spacetime-x86_64-unknown-linux-gnu.tar.gz" ;; \
