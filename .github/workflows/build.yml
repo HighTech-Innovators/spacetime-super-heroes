@@ -37,33 +37,7 @@ jobs:
             && chmod +x /usr/local/bin/k6 \
             && rm -rf k6.zip k6-v${K6_VERSION}-linux-${ARCHITECTURE} \
             && rm -rf k6-v${K6_VERSION}-linux-${ARCHITECTURE}
-      - name: Install Cardamon
-        run: |
-          echo "Installing Cardamon for architecture: $ARCHITECTURE" \
-            && curl -L https://github.com/flyaruu/cardamon-core/releases/download/v${CARDAMON_VERSION}/cardamon-x86_64-unknown-linux-gnu.tgz -o cardamon.tgz \
-            && tar xvfz cardamon.tgz \
-            && mv cardamon /usr/local/bin/cardamon \
-            && rm -rf cardamon.tgz cardamon/
-
       - name: Build docker compose
         run: |
           docker compose build
           docker compose pull
-      - name: Cardamon All
-        run: |
-          export LOG_FILTER=info
-          cardamon run all
-      - name: Cardamon Stats
-        run: |
-          cardamon stats >stats.txt
-          cat stats.txt
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cardamon-metrics
-          path: |
-            cardamon.db
-            stats.txt
-            k6_1.json
-            k6_10.json
-            k6_100.json
-            k6_200.json
