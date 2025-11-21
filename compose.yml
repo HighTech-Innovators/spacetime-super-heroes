@@ -46,7 +46,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ${PWD}/spacetime-modules:/modules
+      - ./spacetime-modules:/modules
     healthcheck: 
       test: "curl -f http://spacetimedb:3000/v1/ping"
       interval: 2s
@@ -62,7 +62,7 @@ services:
       POSTGRES_PASSWORD: superman
       POSTGRES_DB: heroes_database
     volumes:
-      - ${PWD}/database/heroes-db/init/heroes.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./database/heroes-db/init/heroes.sql:/docker-entrypoint-initdb.d/init.sql:ro
 
   villains-db:
     image: postgres:16
@@ -73,7 +73,7 @@ services:
       POSTGRES_PASSWORD: superman
       POSTGRES_DB: villains_database
     volumes:
-      - ${PWD}/database/villains-db/init/villains.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./database/villains-db/init/villains.sql:/docker-entrypoint-initdb.d/init.sql:ro
   locations-db:
     image: mariadb:11.5
     ports:
@@ -85,7 +85,7 @@ services:
       MARIADB_ROOT_PASSWORD: locations
       MARIADB_SKIP_TEST_DB: yes
     volumes:
-      - ${PWD}/database/locations-db/init/1-init-tables.sql:/docker-entrypoint-initdb.d/1-init-tables.sql:ro
+      - ./database/locations-db/init/1-init-tables.sql:/docker-entrypoint-initdb.d/1-init-tables.sql:ro
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       start_period: 10s
