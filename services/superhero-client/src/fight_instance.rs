@@ -7,7 +7,7 @@ use tokio::sync::broadcast::{Receiver, Sender};
 use crate::{
     generated::{
         DbConnection, FightResult, FightTableAccess, HeroTableAccess, LocationTableAccess,
-        VillainTableAccess, execute_random_fight,
+        VillainTableAccess, execute_random_fight, execute_random_fights,
     },
     types::ClientFightResult,
 };
@@ -56,6 +56,30 @@ impl SpacetimeConnectionInstance {
             }
         }
     }
+
+    pub async fn perform_fights(&self, count: u32) -> anyhow::Result<Vec<ClientFightResult>> {
+        let mut rng = IsaacRng::from_os_rng();
+        let mut id_block = [0_u8; 32];
+        rng.fill_bytes(&mut id_block);
+        let random_id = Identity::from_byte_array(id_block);
+
+        let mut receiver = self.receiver.resubscribe();
+        self.connection
+            .reducers
+            .execute_random_fights(self.identity.unwrap(), random_id, count)?;
+        
+        let mut results = Vec::with_capacity(count as usize);
+        loop {
+            let result = receiver.recv().await?;
+            if random_id == result.request_id {
+                results.push(result.into());
+                if results.len() as u32 == count {
+                    break Ok(results);
+                }
+            }
+        }
+    }
+
 
     // pub async fn
     async fn run_job(

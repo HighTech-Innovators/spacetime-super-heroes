@@ -1,4 +1,4 @@
-FROM rust:1.85 AS build
+FROM rust:1.91.1 AS build
 WORKDIR /build
 COPY . .
 RUN cargo build --bins --locked --release

@@ -51,8 +51,8 @@ pub trait execute_random_fight {
     fn on_execute_random_fight(
         &self,
         callback: impl FnMut(&super::ReducerEventContext, &__sdk::Identity, &__sdk::Identity)
-        + Send
-        + 'static,
+            + Send
+            + 'static,
     ) -> ExecuteRandomFightCallbackId;
     /// Cancel a callback previously registered by [`Self::on_execute_random_fight`],
     /// causing it not to run in the future.
@@ -76,8 +76,8 @@ impl execute_random_fight for super::RemoteReducers {
     fn on_execute_random_fight(
         &self,
         mut callback: impl FnMut(&super::ReducerEventContext, &__sdk::Identity, &__sdk::Identity)
-        + Send
-        + 'static,
+            + Send
+            + 'static,
     ) -> ExecuteRandomFightCallbackId {
         ExecuteRandomFightCallbackId(self.imp.on_reducer(
             "execute_random_fight",

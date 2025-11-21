@@ -116,8 +116,8 @@ pub fn execute_fight(identity: Identity, request_id: Identity, hero: Hero, villa
     }
 }
 
-#[spacetimedb::reducer]
-pub fn execute_random_fight(ctx: &ReducerContext, identity: Identity, request_id: Identity) -> Result<(), String> {
+
+fn execute_random_fight_internal(ctx: &ReducerContext, identity: Identity, request_id: Identity) -> Result<(), String> {
     info!("Execute random fight");
     let hero = random_hero(ctx);
 
@@ -133,6 +133,36 @@ pub fn execute_random_fight(ctx: &ReducerContext, identity: Identity, request_id
     info!("# of fights: {}", fight_count);
     Ok(())
 }
+
+
+#[spacetimedb::reducer]
+pub fn execute_random_fight(ctx: &ReducerContext, identity: Identity, request_id: Identity) -> Result<(), String> {
+    // execute_random_fight_internal(ctx, identity, request_id)
+        info!("Execute random fight");
+    let hero = random_hero(ctx);
+
+    info!("Random hero: {}", hero.name);
+    let villain = random_villain(ctx);
+    info!("Random villain: {}", villain.name);
+    let location = random_location(ctx);
+    info!("Random location: {}", location.name);
+    let result = execute_fight(identity, request_id, hero, villain, location, ctx.timestamp);
+    let inserted = ctx.db.fight().insert(result);
+    info!("Fight result: {:?}", inserted.winner_name);
+    let fight_count = ctx.db.fight().count();
+    info!("# of fights: {}", fight_count);
+    Ok(())
+}
+
+#[spacetimedb::reducer]
+pub fn execute_random_fights(ctx: &ReducerContext, identity: Identity, request_id: Identity, count: u32) -> Result<(), String> {
+    for _ in 0..count {
+        execute_random_fight_internal(ctx, identity, request_id)?;
+    }
+    Ok(())
+}
+
+
 
 #[spacetimedb::reducer]
 pub fn add_event(ctx: &ReducerContext, name: String) -> Result<(), String> {

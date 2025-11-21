@@ -1,11 +1,11 @@
 import http from 'k6/http';
 import { check } from 'k6';
-import { randomFight } from './randomFight.js';
+import { randomFights } from './randomFight.js';
 
 // TODO deal with dropped iterations, now it fails the entire run
 export const options = {
   thresholds: {
-    http_req_duration: ['p(95)<500'],  // 95% of requests should be <50ms
+    http_req_duration: ['p(95)<5000'],  // 95% of requests should be <5000ms
     http_req_failed: ['rate<0.001'],    // error rate should be <0.1%
     dropped_iterations: ['count == 0'],  // no dropped iterations allowed
   },
@@ -26,5 +26,5 @@ export const options = {
 };
 
 export default () => {
-  var fight_result = randomFight();
+  var fight_result = randomFights(__ENV.BATCH_SIZE ? parseInt(__ENV.BATCH_SIZE) : 500);
 }
