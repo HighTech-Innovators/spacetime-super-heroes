@@ -12,7 +12,7 @@ pub mod sql;
 const DB_NAME: &str = "superhero-server";
 
 #[tokio::main]
-async fn main() {
+async fn main()-> ! {
     env_logger::builder()
         .filter_level(log::LevelFilter::Debug)
         .init();
@@ -43,7 +43,9 @@ async fn main() {
     import_locations(db, &locations_db_url).await;
 
     // give the outbound requests a moment to finish
-    sleep(Duration::from_secs(2)).await;
+    loop {
+            sleep(Duration::from_secs(10)).await;
+    }
 }
 
 async fn import_heroes(db: &DbConnection, url: &str) {
