@@ -7,6 +7,10 @@ services:
     volumes:
       - ./k6:/k6:ro
       - ./k6/results:/results
+    deploy:
+      resources:
+        limits:
+          memory: 42M
   spacetimedb-importer:
     build: 
       context: services/superhero-importer
@@ -21,12 +25,20 @@ services:
     depends_on:
       spacetimedb:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 24M
   spacetime-modules:
     build: spacetime-modules
     command: sh -c "echo 'ABOUT TO DEPLOY' && ./spacetimedb-cli login --server-issued-login 'http://spacetimedb:3000' && ./spacetimedb-cli publish -s 'http://spacetimedb:3000' --project-path superhero-server -y superhero-server && ./spacetimedb-cli logs -s 'http://spacetimedb:3000' -f superhero-server"
     depends_on:
       spacetimedb:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 18M
 
   spacetimedb-client:
     build: 
@@ -40,6 +52,10 @@ services:
       SPACETIME_DB: "superhero-server"
       SPACETIME_DB_URL: "http://spacetimedb:3000"
     # command: sleep 5 && /spacetimedb-client
+    deploy:
+      resources:
+        limits:
+          memory: 200M
   spacetimedb:
     image: clockworklabs/spacetime
     command: start
@@ -52,6 +68,10 @@ services:
       interval: 2s
       timeout: 1m
       retries: 20
+    deploy:
+      resources:
+        limits:
+          memory: 200M
 
   heroes-db:
     image: postgres:16
@@ -63,6 +83,10 @@ services:
       POSTGRES_DB: heroes_database
     volumes:
       - ./database/heroes-db/init/heroes.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    deploy:
+      resources:
+        limits:
+          memory: 32M
 
   villains-db:
     image: postgres:16
@@ -74,6 +98,10 @@ services:
       POSTGRES_DB: villains_database
     volumes:
       - ./database/villains-db/init/villains.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    deploy:
+      resources:
+        limits:
+          memory: 31M
   locations-db:
     image: mariadb:11.5
     ports:
@@ -92,4 +120,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 126M
       
