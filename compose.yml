@@ -38,7 +38,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 18M
+          memory: 128M
 
   spacetimedb-client:
     build: 
