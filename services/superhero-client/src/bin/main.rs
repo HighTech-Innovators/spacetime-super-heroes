@@ -28,7 +28,7 @@ async fn main() {
         db_url: spacetime_db_url,
     };
     let state = AppState {
-        pool: Pool::builder(instance_pool).max_size(10).build().unwrap(),
+        pool: Pool::builder(instance_pool).max_size(5).build().unwrap(),
     };
     let app = Router::new()
         .route("/random_fight", post(perform_fight))

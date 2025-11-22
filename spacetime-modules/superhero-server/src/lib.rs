@@ -43,10 +43,11 @@ pub fn add_location(ctx: &ReducerContext, location: Location) -> Result<(), Stri
 
 #[spacetimedb::reducer]
 pub fn clear_fights(ctx: &ReducerContext) -> Result<(), String> {
+    let row_count = ctx.db.fight().count();
     for row in ctx.db.fight().iter() {
         ctx.db.fight().delete(row);
     }
-    info!("All fights cleared");
+    info!("{} fights cleared", row_count);
     Ok(())
 }
 

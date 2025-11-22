@@ -80,6 +80,8 @@ impl SpacetimeConnectionInstance {
     }
 
     pub async fn clear_fights(&self) -> anyhow::Result<()> {
+        let before = self.connection.db.fight().count();
+        info!("Identity: {} Clearing {} fights", self.identity.unwrap(), before);
         self.connection
             .reducers
             .clear_fights()?;
@@ -98,6 +100,7 @@ impl SpacetimeConnectionInstance {
         self.connection
             .subscription_builder()
             .on_applied(move |e| {
+                info!("Subscription applied for identity 0x{}", identity);
                 info!("Number of fights: {}", e.db.fight().count());
                 info!("Number of heroes: {}", e.db.hero().count());
                 info!("Number of villains: {}", e.db.villain().count());

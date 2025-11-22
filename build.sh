@@ -1,4 +1,7 @@
 #!/bin/sh
+
+# This will (re)create the generated client code for both the
+# importer and the client service, based on the spacetime module table definitions.
 spacetime generate --lang rust --out-dir ./services/superhero-client/src/generated --project-path ./spacetime-modules/superhero-server
 spacetime generate --lang rust --out-dir ./services/superhero-importer/src/generated --project-path ./spacetime-modules/superhero-server
 
