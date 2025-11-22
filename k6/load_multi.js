@@ -32,5 +32,5 @@ export default () => {
 
 export function teardown(data) {
   const host = __ENV.K6_HOST || "http://localhost:8080";
-  var fight_response = http.delete(host + "/fights");
+  var fight_response = http.del(host + "/fights");
 }
