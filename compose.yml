@@ -86,7 +86,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 32M
+          memory: 64M
 
   villains-db:
     image: postgres:16
@@ -101,7 +101,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 31M
+          memory: 64M
   locations-db:
     image: mariadb:11.5
     ports:
