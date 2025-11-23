@@ -55,7 +55,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 250M
+          memory: 350M
   spacetimedb:
     image: clockworklabs/spacetime
     command: start
