@@ -19,3 +19,51 @@ pub struct Hero {
 impl __sdk::InModule for Hero {
     type Module = super::RemoteModule;
 }
+
+/// Column accessor struct for the table `Hero`.
+///
+/// Provides typed access to columns for query building.
+pub struct HeroCols {
+    pub space_id: __sdk::__query_builder::Col<Hero, u64>,
+    pub id: __sdk::__query_builder::Col<Hero, i64>,
+    pub level: __sdk::__query_builder::Col<Hero, i32>,
+    pub name: __sdk::__query_builder::Col<Hero, String>,
+    pub other_name: __sdk::__query_builder::Col<Hero, Option<String>>,
+    pub picture: __sdk::__query_builder::Col<Hero, String>,
+    pub powers: __sdk::__query_builder::Col<Hero, String>,
+}
+
+impl __sdk::__query_builder::HasCols for Hero {
+    type Cols = HeroCols;
+    fn cols(table_name: &'static str) -> Self::Cols {
+        HeroCols {
+            space_id: __sdk::__query_builder::Col::new(table_name, "space_id"),
+            id: __sdk::__query_builder::Col::new(table_name, "id"),
+            level: __sdk::__query_builder::Col::new(table_name, "level"),
+            name: __sdk::__query_builder::Col::new(table_name, "name"),
+            other_name: __sdk::__query_builder::Col::new(table_name, "other_name"),
+            picture: __sdk::__query_builder::Col::new(table_name, "picture"),
+            powers: __sdk::__query_builder::Col::new(table_name, "powers"),
+        }
+    }
+}
+
+/// Indexed column accessor struct for the table `Hero`.
+///
+/// Provides typed access to indexed columns for query building.
+pub struct HeroIxCols {
+    pub id: __sdk::__query_builder::IxCol<Hero, i64>,
+    pub space_id: __sdk::__query_builder::IxCol<Hero, u64>,
+}
+
+impl __sdk::__query_builder::HasIxCols for Hero {
+    type IxCols = HeroIxCols;
+    fn ix_cols(table_name: &'static str) -> Self::IxCols {
+        HeroIxCols {
+            id: __sdk::__query_builder::IxCol::new(table_name, "id"),
+            space_id: __sdk::__query_builder::IxCol::new(table_name, "space_id"),
+        }
+    }
+}
+
+impl __sdk::__query_builder::CanBeLookupTable for Hero {}

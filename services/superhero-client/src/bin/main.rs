@@ -1,6 +1,11 @@
 use std::env;
 
-use axum::{Json, Router, extract::{Path, State}, http::Response, routing::{delete, post}};
+use axum::{
+    Json, Router,
+    extract::{Path, State},
+    http::Response,
+    routing::{delete, post},
+};
 use deadpool::managed::Pool;
 use log::info;
 use superhero_client::{pool::InstancePool, types::ClientFightResult};
@@ -28,7 +33,7 @@ async fn main() {
         db_url: spacetime_db_url,
     };
     let state = AppState {
-        pool: Pool::builder(instance_pool).max_size(5).build().unwrap(),
+        pool: Pool::builder(instance_pool).max_size(200).build().unwrap(),
     };
     let app = Router::new()
         .route("/random_fight", post(perform_fight))
@@ -47,14 +52,17 @@ async fn perform_fight(State(state): State<AppState>) -> Json<ClientFightResult>
 }
 
 #[axum::debug_handler]
-async fn perform_fights(Path(count): Path<u32>, State(state): State<AppState>) -> Json<Vec<ClientFightResult>> {
+async fn perform_fights(
+    Path(count): Path<u32>,
+    State(state): State<AppState>,
+) -> Json<Vec<ClientFightResult>> {
     info!("Received fight request for {} fights", count);
     let instance = state.pool.get().await.unwrap();
     Json(instance.perform_fights(count).await.unwrap())
 }
 
 #[axum::debug_handler]
-async fn clear_fights(State(state): State<AppState>)->String {
+async fn clear_fights(State(state): State<AppState>) -> String {
     let instance = state.pool.get().await.unwrap();
     instance.clear_fights().await.unwrap(); // TODO handle properly
     "Fights cleared".to_owned()

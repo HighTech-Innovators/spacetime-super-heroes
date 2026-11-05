@@ -30,3 +30,67 @@ pub struct FightResult {
 impl __sdk::InModule for FightResult {
     type Module = super::RemoteModule;
 }
+
+/// Column accessor struct for the table `FightResult`.
+///
+/// Provides typed access to columns for query building.
+pub struct FightResultCols {
+    pub id: __sdk::__query_builder::Col<FightResult, u64>,
+    pub identity: __sdk::__query_builder::Col<FightResult, __sdk::Identity>,
+    pub request_id: __sdk::__query_builder::Col<FightResult, __sdk::Identity>,
+    pub fight_date: __sdk::__query_builder::Col<FightResult, __sdk::Timestamp>,
+    pub winner_name: __sdk::__query_builder::Col<FightResult, String>,
+    pub winner_level: __sdk::__query_builder::Col<FightResult, i32>,
+    pub winner_powers: __sdk::__query_builder::Col<FightResult, String>,
+    pub winner_picture: __sdk::__query_builder::Col<FightResult, String>,
+    pub loser_name: __sdk::__query_builder::Col<FightResult, String>,
+    pub loser_level: __sdk::__query_builder::Col<FightResult, i32>,
+    pub loser_powers: __sdk::__query_builder::Col<FightResult, String>,
+    pub loser_picture: __sdk::__query_builder::Col<FightResult, String>,
+    pub winner_team: __sdk::__query_builder::Col<FightResult, Winner>,
+    pub loser_team: __sdk::__query_builder::Col<FightResult, Winner>,
+    pub location: __sdk::__query_builder::Col<FightResult, FightLocation>,
+}
+
+impl __sdk::__query_builder::HasCols for FightResult {
+    type Cols = FightResultCols;
+    fn cols(table_name: &'static str) -> Self::Cols {
+        FightResultCols {
+            id: __sdk::__query_builder::Col::new(table_name, "id"),
+            identity: __sdk::__query_builder::Col::new(table_name, "identity"),
+            request_id: __sdk::__query_builder::Col::new(table_name, "request_id"),
+            fight_date: __sdk::__query_builder::Col::new(table_name, "fight_date"),
+            winner_name: __sdk::__query_builder::Col::new(table_name, "winner_name"),
+            winner_level: __sdk::__query_builder::Col::new(table_name, "winner_level"),
+            winner_powers: __sdk::__query_builder::Col::new(table_name, "winner_powers"),
+            winner_picture: __sdk::__query_builder::Col::new(table_name, "winner_picture"),
+            loser_name: __sdk::__query_builder::Col::new(table_name, "loser_name"),
+            loser_level: __sdk::__query_builder::Col::new(table_name, "loser_level"),
+            loser_powers: __sdk::__query_builder::Col::new(table_name, "loser_powers"),
+            loser_picture: __sdk::__query_builder::Col::new(table_name, "loser_picture"),
+            winner_team: __sdk::__query_builder::Col::new(table_name, "winner_team"),
+            loser_team: __sdk::__query_builder::Col::new(table_name, "loser_team"),
+            location: __sdk::__query_builder::Col::new(table_name, "location"),
+        }
+    }
+}
+
+/// Indexed column accessor struct for the table `FightResult`.
+///
+/// Provides typed access to indexed columns for query building.
+pub struct FightResultIxCols {
+    pub id: __sdk::__query_builder::IxCol<FightResult, u64>,
+    pub identity: __sdk::__query_builder::IxCol<FightResult, __sdk::Identity>,
+}
+
+impl __sdk::__query_builder::HasIxCols for FightResult {
+    type IxCols = FightResultIxCols;
+    fn ix_cols(table_name: &'static str) -> Self::IxCols {
+        FightResultIxCols {
+            id: __sdk::__query_builder::IxCol::new(table_name, "id"),
+            identity: __sdk::__query_builder::IxCol::new(table_name, "identity"),
+        }
+    }
+}
+
+impl __sdk::__query_builder::CanBeLookupTable for FightResult {}

@@ -13,3 +13,33 @@ pub struct Event {
 impl __sdk::InModule for Event {
     type Module = super::RemoteModule;
 }
+
+/// Column accessor struct for the table `Event`.
+///
+/// Provides typed access to columns for query building.
+pub struct EventCols {
+    pub name: __sdk::__query_builder::Col<Event, String>,
+}
+
+impl __sdk::__query_builder::HasCols for Event {
+    type Cols = EventCols;
+    fn cols(table_name: &'static str) -> Self::Cols {
+        EventCols {
+            name: __sdk::__query_builder::Col::new(table_name, "name"),
+        }
+    }
+}
+
+/// Indexed column accessor struct for the table `Event`.
+///
+/// Provides typed access to indexed columns for query building.
+pub struct EventIxCols {}
+
+impl __sdk::__query_builder::HasIxCols for Event {
+    type IxCols = EventIxCols;
+    fn ix_cols(table_name: &'static str) -> Self::IxCols {
+        EventIxCols {}
+    }
+}
+
+impl __sdk::__query_builder::CanBeLookupTable for Event {}

@@ -6,7 +6,8 @@ use tokio::sync::broadcast::{Receiver, Sender};
 
 use crate::{
     generated::{
-        DbConnection, FightResult, FightTableAccess, HeroTableAccess, LocationTableAccess, VillainTableAccess, clear_fights, execute_random_fight, execute_random_fights
+        DbConnection, FightResult, FightTableAccess, HeroTableAccess, LocationTableAccess,
+        VillainTableAccess, clear_fights, execute_random_fight, execute_random_fights,
     },
     types::ClientFightResult,
 };
@@ -22,7 +23,9 @@ impl SpacetimeConnectionInstance {
         let (sender, receiver) = tokio::sync::broadcast::channel::<FightResult>(10000);
         let (connection, identity_receiver) = loop {
             let (identity_sender, identity_receiver) = tokio::sync::oneshot::channel::<Identity>();
-            if let Ok(connection) = Self::connect_to_client(&db_name, &db_url, identity_sender) { break (connection, identity_receiver) }
+            if let Ok(connection) = Self::connect_to_client(&db_name, &db_url, identity_sender) {
+                break (connection, identity_receiver);
+            }
         };
         let connection = Box::leak(Box::new(connection));
         let mut instance = Self {
@@ -47,7 +50,7 @@ impl SpacetimeConnectionInstance {
         self.connection
             .reducers
             .execute_random_fight(self.identity.unwrap(), random_id)?;
-        
+
         loop {
             let result = receiver.recv().await?;
             if random_id == result.request_id {
@@ -66,7 +69,7 @@ impl SpacetimeConnectionInstance {
         self.connection
             .reducers
             .execute_random_fights(self.identity.unwrap(), random_id, count)?;
-        
+
         let mut results = Vec::with_capacity(count as usize);
         loop {
             let result = receiver.recv().await?;
@@ -81,13 +84,14 @@ impl SpacetimeConnectionInstance {
 
     pub async fn clear_fights(&self) -> anyhow::Result<()> {
         let before = self.connection.db.fight().count();
-        info!("Identity: {} Clearing {} fights", self.identity.unwrap(), before);
-        self.connection
-            .reducers
-            .clear_fights()?;
+        info!(
+            "Identity: {} Clearing {} fights",
+            self.identity.unwrap(),
+            before
+        );
+        self.connection.reducers.clear_fights()?;
         Ok(())
     }
-
 
     // pub async fn
     async fn run_job(
@@ -124,7 +128,6 @@ impl SpacetimeConnectionInstance {
                 // info!("Fight result: {:?}", fight_result);
                 sender.send(fight_result.clone()).unwrap();
             });
-            
     }
 
     fn connect_to_client(
@@ -135,7 +138,7 @@ impl SpacetimeConnectionInstance {
         info!("Connecting to spacetimedb. URL: {} DB: {}", db_url, db_name);
         DbConnection::builder()
             .with_uri(db_url)
-            .with_module_name(db_name)
+            .with_database_name(db_name)
             .on_connect(move |_db, identity, _token| {
                 identity_sender.send(identity).unwrap();
             })

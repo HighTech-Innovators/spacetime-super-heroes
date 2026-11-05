@@ -19,3 +19,51 @@ pub struct Villain {
 impl __sdk::InModule for Villain {
     type Module = super::RemoteModule;
 }
+
+/// Column accessor struct for the table `Villain`.
+///
+/// Provides typed access to columns for query building.
+pub struct VillainCols {
+    pub space_id: __sdk::__query_builder::Col<Villain, u64>,
+    pub id: __sdk::__query_builder::Col<Villain, i64>,
+    pub level: __sdk::__query_builder::Col<Villain, i32>,
+    pub name: __sdk::__query_builder::Col<Villain, String>,
+    pub other_name: __sdk::__query_builder::Col<Villain, Option<String>>,
+    pub picture: __sdk::__query_builder::Col<Villain, String>,
+    pub powers: __sdk::__query_builder::Col<Villain, String>,
+}
+
+impl __sdk::__query_builder::HasCols for Villain {
+    type Cols = VillainCols;
+    fn cols(table_name: &'static str) -> Self::Cols {
+        VillainCols {
+            space_id: __sdk::__query_builder::Col::new(table_name, "space_id"),
+            id: __sdk::__query_builder::Col::new(table_name, "id"),
+            level: __sdk::__query_builder::Col::new(table_name, "level"),
+            name: __sdk::__query_builder::Col::new(table_name, "name"),
+            other_name: __sdk::__query_builder::Col::new(table_name, "other_name"),
+            picture: __sdk::__query_builder::Col::new(table_name, "picture"),
+            powers: __sdk::__query_builder::Col::new(table_name, "powers"),
+        }
+    }
+}
+
+/// Indexed column accessor struct for the table `Villain`.
+///
+/// Provides typed access to indexed columns for query building.
+pub struct VillainIxCols {
+    pub id: __sdk::__query_builder::IxCol<Villain, i64>,
+    pub space_id: __sdk::__query_builder::IxCol<Villain, u64>,
+}
+
+impl __sdk::__query_builder::HasIxCols for Villain {
+    type IxCols = VillainIxCols;
+    fn ix_cols(table_name: &'static str) -> Self::IxCols {
+        VillainIxCols {
+            id: __sdk::__query_builder::IxCol::new(table_name, "id"),
+            space_id: __sdk::__query_builder::IxCol::new(table_name, "space_id"),
+        }
+    }
+}
+
+impl __sdk::__query_builder::CanBeLookupTable for Villain {}

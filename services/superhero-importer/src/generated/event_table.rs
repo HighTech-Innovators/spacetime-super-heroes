@@ -18,6 +18,18 @@ pub struct EventTableHandle<'ctx> {
     ctx: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
+/// Lifetime-aware accessor marker for the table `event`.
+pub struct EventTableAccessor;
+
+impl __sdk::TableAccessor<super::RemoteTables> for EventTableAccessor {
+    type Row = Event;
+    type Handle<'db> = EventTableHandle<'db>;
+
+    fn get<'db>(db: &'db super::RemoteTables) -> Self::Handle<'db> {
+        db.event()
+    }
+}
+
 #[allow(non_camel_case_types)]
 /// Extension trait for access to the table `event`.
 ///
@@ -39,6 +51,18 @@ impl EventTableAccess for super::RemoteTables {
 
 pub struct EventInsertCallbackId(__sdk::CallbackId);
 pub struct EventDeleteCallbackId(__sdk::CallbackId);
+
+impl<'ctx> __sdk::TableLike for EventTableHandle<'ctx> {
+    type Row = Event;
+    type EventContext = super::EventContext;
+
+    fn count(&self) -> u64 {
+        self.imp.count()
+    }
+    fn iter(&self) -> impl Iterator<Item = Event> + '_ {
+        self.imp.iter()
+    }
+}
 
 impl<'ctx> __sdk::Table for EventTableHandle<'ctx> {
     type Row = Event;
@@ -78,6 +102,36 @@ impl<'ctx> __sdk::Table for EventTableHandle<'ctx> {
     }
 }
 
+impl<'ctx> __sdk::WithInsert for EventTableHandle<'ctx> {
+    type InsertCallbackId = EventInsertCallbackId;
+
+    fn on_insert(
+        &self,
+        callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
+    ) -> EventInsertCallbackId {
+        EventInsertCallbackId(self.imp.on_insert(Box::new(callback)))
+    }
+
+    fn remove_on_insert(&self, callback: EventInsertCallbackId) {
+        self.imp.remove_on_insert(callback.0)
+    }
+}
+
+impl<'ctx> __sdk::WithDelete for EventTableHandle<'ctx> {
+    type DeleteCallbackId = EventDeleteCallbackId;
+
+    fn on_delete(
+        &self,
+        callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
+    ) -> EventDeleteCallbackId {
+        EventDeleteCallbackId(self.imp.on_delete(Box::new(callback)))
+    }
+
+    fn remove_on_delete(&self, callback: EventDeleteCallbackId) {
+        self.imp.remove_on_delete(callback.0)
+    }
+}
+
 #[doc(hidden)]
 pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
     let _table = client_cache.get_or_make_table::<Event>("event");
@@ -85,11 +139,27 @@ pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::Remote
 
 #[doc(hidden)]
 pub(super) fn parse_table_update(
-    raw_updates: __ws::TableUpdate<__ws::BsatnFormat>,
+    raw_updates: __ws::v2::TableUpdate,
 ) -> __sdk::Result<__sdk::TableUpdate<Event>> {
     __sdk::TableUpdate::parse_table_update(raw_updates).map_err(|e| {
         __sdk::InternalError::failed_parse("TableUpdate<Event>", "TableUpdate")
             .with_cause(e)
             .into()
     })
+}
+
+#[allow(non_camel_case_types)]
+/// Extension trait for query builder access to the table `Event`.
+///
+/// Implemented for [`__sdk::QueryTableAccessor`].
+pub trait eventQueryTableAccess {
+    #[allow(non_snake_case)]
+    /// Get a query builder for the table `Event`.
+    fn event(&self) -> __sdk::__query_builder::Table<Event>;
+}
+
+impl eventQueryTableAccess for __sdk::QueryTableAccessor {
+    fn event(&self) -> __sdk::__query_builder::Table<Event> {
+        __sdk::__query_builder::Table::new("event")
+    }
 }

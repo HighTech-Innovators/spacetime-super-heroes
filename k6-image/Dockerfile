@@ -5,7 +5,7 @@ FROM alpine:3.20 AS builder
 
 ARG K6_VERSION=1.3.0
 # Valid values: amd64, arm64
-ARG K6_ARCH=amd64
+ARG K6_ARCH=arm64
 ENV K6_TARBALL="k6-v${K6_VERSION}-linux-${K6_ARCH}.tar.gz"
 # ENV K6_CHECKSUM="k6-v${K6_VERSION}-linux-${K6_ARCH}.tar.gz"
 ENV K6_BASEURL="https://github.com/grafana/k6/releases/download/v${K6_VERSION}"

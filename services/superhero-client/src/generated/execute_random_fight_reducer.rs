@@ -24,8 +24,6 @@ impl __sdk::InModule for ExecuteRandomFightArgs {
     type Module = super::RemoteModule;
 }
 
-pub struct ExecuteRandomFightCallbackId(__sdk::CallbackId);
-
 #[allow(non_camel_case_types)]
 /// Extension trait for access to the reducer `execute_random_fight`.
 ///
@@ -35,95 +33,49 @@ pub trait execute_random_fight {
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
-    ///  and its status can be observed by listening for [`Self::on_execute_random_fight`] callbacks.
-    fn execute_random_fight(
-        &self,
-        identity: __sdk::Identity,
-        request_id: __sdk::Identity,
-    ) -> __sdk::Result<()>;
-    /// Register a callback to run whenever we are notified of an invocation of the reducer `execute_random_fight`.
-    ///
-    /// Callbacks should inspect the [`__sdk::ReducerEvent`] contained in the [`super::ReducerEventContext`]
-    /// to determine the reducer's status.
-    ///
-    /// The returned [`ExecuteRandomFightCallbackId`] can be passed to [`Self::remove_on_execute_random_fight`]
-    /// to cancel the callback.
-    fn on_execute_random_fight(
-        &self,
-        callback: impl FnMut(&super::ReducerEventContext, &__sdk::Identity, &__sdk::Identity)
-            + Send
-            + 'static,
-    ) -> ExecuteRandomFightCallbackId;
-    /// Cancel a callback previously registered by [`Self::on_execute_random_fight`],
-    /// causing it not to run in the future.
-    fn remove_on_execute_random_fight(&self, callback: ExecuteRandomFightCallbackId);
-}
-
-impl execute_random_fight for super::RemoteReducers {
+    ///  and this method provides no way to listen for its completion status.
+    /// /// Use [`execute_random_fight:execute_random_fight_then`] to run a callback after the reducer completes.
     fn execute_random_fight(
         &self,
         identity: __sdk::Identity,
         request_id: __sdk::Identity,
     ) -> __sdk::Result<()> {
-        self.imp.call_reducer(
-            "execute_random_fight",
+        self.execute_random_fight_then(identity, request_id, |_, _| {})
+    }
+
+    /// Request that the remote module invoke the reducer `execute_random_fight` to run as soon as possible,
+    /// registering `callback` to run when we are notified that the reducer completed.
+    ///
+    /// This method returns immediately, and errors only if we are unable to send the request.
+    /// The reducer will run asynchronously in the future,
+    ///  and its status can be observed with the `callback`.
+    fn execute_random_fight_then(
+        &self,
+        identity: __sdk::Identity,
+        request_id: __sdk::Identity,
+
+        callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
+            + Send
+            + 'static,
+    ) -> __sdk::Result<()>;
+}
+
+impl execute_random_fight for super::RemoteReducers {
+    fn execute_random_fight_then(
+        &self,
+        identity: __sdk::Identity,
+        request_id: __sdk::Identity,
+
+        callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
+            + Send
+            + 'static,
+    ) -> __sdk::Result<()> {
+        self.imp.invoke_reducer_with_callback(
             ExecuteRandomFightArgs {
                 identity,
                 request_id,
             },
+            callback,
         )
-    }
-    fn on_execute_random_fight(
-        &self,
-        mut callback: impl FnMut(&super::ReducerEventContext, &__sdk::Identity, &__sdk::Identity)
-            + Send
-            + 'static,
-    ) -> ExecuteRandomFightCallbackId {
-        ExecuteRandomFightCallbackId(self.imp.on_reducer(
-            "execute_random_fight",
-            Box::new(move |ctx: &super::ReducerEventContext| {
-                let super::ReducerEventContext {
-                    event:
-                        __sdk::ReducerEvent {
-                            reducer:
-                                super::Reducer::ExecuteRandomFight {
-                                    identity,
-                                    request_id,
-                                },
-                            ..
-                        },
-                    ..
-                } = ctx
-                else {
-                    unreachable!()
-                };
-                callback(ctx, identity, request_id)
-            }),
-        ))
-    }
-    fn remove_on_execute_random_fight(&self, callback: ExecuteRandomFightCallbackId) {
-        self.imp
-            .remove_on_reducer("execute_random_fight", callback.0)
-    }
-}
-
-#[allow(non_camel_case_types)]
-#[doc(hidden)]
-/// Extension trait for setting the call-flags for the reducer `execute_random_fight`.
-///
-/// Implemented for [`super::SetReducerFlags`].
-///
-/// This type is currently unstable and may be removed without a major version bump.
-pub trait set_flags_for_execute_random_fight {
-    /// Set the call-reducer flags for the reducer `execute_random_fight` to `flags`.
-    ///
-    /// This type is currently unstable and may be removed without a major version bump.
-    fn execute_random_fight(&self, flags: __ws::CallReducerFlags);
-}
-
-impl set_flags_for_execute_random_fight for super::SetReducerFlags {
-    fn execute_random_fight(&self, flags: __ws::CallReducerFlags) {
-        self.imp
-            .set_call_reducer_flags("execute_random_fight", flags);
     }
 }

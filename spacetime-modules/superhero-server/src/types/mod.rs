@@ -1,6 +1,6 @@
 use spacetimedb::{Identity, SpacetimeType, Timestamp};
 
-#[spacetimedb::table(name = hero, public)]
+#[spacetimedb::table(accessor = hero, public)]
 pub struct Hero {
     #[primary_key]
     #[auto_inc]
@@ -14,7 +14,7 @@ pub struct Hero {
     pub powers: String,
 }
 
-#[spacetimedb::table(name = villain, public)]
+#[spacetimedb::table(accessor = villain, public)]
 pub struct Villain {
     #[primary_key]
     #[auto_inc]
@@ -38,13 +38,12 @@ pub enum LocationType {
     MOON,
 }
 
-
-#[spacetimedb::table(name = event, public)]
+#[spacetimedb::table(accessor = event, public)]
 pub struct Event {
     pub name: String,
 }
 
-#[spacetimedb::table(name = location, public)]
+#[spacetimedb::table(accessor = location, public)]
 pub struct Location {
     #[primary_key]
     #[auto_inc]
@@ -54,7 +53,7 @@ pub struct Location {
     pub description: String,
     pub name: String,
     pub picture: String,
-    pub location_type: LocationType, 
+    pub location_type: LocationType,
 }
 
 #[derive(SpacetimeType)]
@@ -63,10 +62,10 @@ pub struct FightLocation {
     pub description: String,
     pub name: String,
     pub picture: String,
-    pub location_type: LocationType, 
+    pub location_type: LocationType,
 }
 
-#[spacetimedb::table(name = fight, public)]
+#[spacetimedb::table(accessor = fight, public)]
 pub struct FightResult {
     #[primary_key]
     #[auto_inc]
@@ -89,8 +88,7 @@ pub struct FightResult {
     pub location: FightLocation,
 }
 
-#[derive(Clone, Copy, Debug)]
-#[derive(SpacetimeType)]
+#[derive(Clone, Copy, Debug, SpacetimeType)]
 pub enum Winner {
     Heroes,
     Villains,
@@ -98,6 +96,12 @@ pub enum Winner {
 
 impl From<Location> for FightLocation {
     fn from(value: Location) -> Self {
-        Self { id: value.id, description: value.description, name: value.name, picture: value.picture, location_type: value.location_type }
+        Self {
+            id: value.id,
+            description: value.description,
+            name: value.name,
+            picture: value.picture,
+            location_type: value.location_type,
+        }
     }
 }

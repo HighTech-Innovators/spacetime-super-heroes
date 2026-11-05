@@ -24,8 +24,6 @@ impl __sdk::InModule for AddVillainArgs {
     type Module = super::RemoteModule;
 }
 
-pub struct AddVillainCallbackId(__sdk::CallbackId);
-
 #[allow(non_camel_case_types)]
 /// Extension trait for access to the reducer `add_villain`.
 ///
@@ -35,72 +33,38 @@ pub trait add_villain {
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
-    ///  and its status can be observed by listening for [`Self::on_add_villain`] callbacks.
-    fn add_villain(&self, villain: Villain) -> __sdk::Result<()>;
-    /// Register a callback to run whenever we are notified of an invocation of the reducer `add_villain`.
+    ///  and this method provides no way to listen for its completion status.
+    /// /// Use [`add_villain:add_villain_then`] to run a callback after the reducer completes.
+    fn add_villain(&self, villain: Villain) -> __sdk::Result<()> {
+        self.add_villain_then(villain, |_, _| {})
+    }
+
+    /// Request that the remote module invoke the reducer `add_villain` to run as soon as possible,
+    /// registering `callback` to run when we are notified that the reducer completed.
     ///
-    /// Callbacks should inspect the [`__sdk::ReducerEvent`] contained in the [`super::ReducerEventContext`]
-    /// to determine the reducer's status.
-    ///
-    /// The returned [`AddVillainCallbackId`] can be passed to [`Self::remove_on_add_villain`]
-    /// to cancel the callback.
-    fn on_add_villain(
+    /// This method returns immediately, and errors only if we are unable to send the request.
+    /// The reducer will run asynchronously in the future,
+    ///  and its status can be observed with the `callback`.
+    fn add_villain_then(
         &self,
-        callback: impl FnMut(&super::ReducerEventContext, &Villain) + Send + 'static,
-    ) -> AddVillainCallbackId;
-    /// Cancel a callback previously registered by [`Self::on_add_villain`],
-    /// causing it not to run in the future.
-    fn remove_on_add_villain(&self, callback: AddVillainCallbackId);
+        villain: Villain,
+
+        callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
+            + Send
+            + 'static,
+    ) -> __sdk::Result<()>;
 }
 
 impl add_villain for super::RemoteReducers {
-    fn add_villain(&self, villain: Villain) -> __sdk::Result<()> {
-        self.imp
-            .call_reducer("add_villain", AddVillainArgs { villain })
-    }
-    fn on_add_villain(
+    fn add_villain_then(
         &self,
-        mut callback: impl FnMut(&super::ReducerEventContext, &Villain) + Send + 'static,
-    ) -> AddVillainCallbackId {
-        AddVillainCallbackId(self.imp.on_reducer(
-            "add_villain",
-            Box::new(move |ctx: &super::ReducerEventContext| {
-                let super::ReducerEventContext {
-                    event:
-                        __sdk::ReducerEvent {
-                            reducer: super::Reducer::AddVillain { villain },
-                            ..
-                        },
-                    ..
-                } = ctx
-                else {
-                    unreachable!()
-                };
-                callback(ctx, villain)
-            }),
-        ))
-    }
-    fn remove_on_add_villain(&self, callback: AddVillainCallbackId) {
-        self.imp.remove_on_reducer("add_villain", callback.0)
-    }
-}
+        villain: Villain,
 
-#[allow(non_camel_case_types)]
-#[doc(hidden)]
-/// Extension trait for setting the call-flags for the reducer `add_villain`.
-///
-/// Implemented for [`super::SetReducerFlags`].
-///
-/// This type is currently unstable and may be removed without a major version bump.
-pub trait set_flags_for_add_villain {
-    /// Set the call-reducer flags for the reducer `add_villain` to `flags`.
-    ///
-    /// This type is currently unstable and may be removed without a major version bump.
-    fn add_villain(&self, flags: __ws::CallReducerFlags);
-}
-
-impl set_flags_for_add_villain for super::SetReducerFlags {
-    fn add_villain(&self, flags: __ws::CallReducerFlags) {
-        self.imp.set_call_reducer_flags("add_villain", flags);
+        callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
+            + Send
+            + 'static,
+    ) -> __sdk::Result<()> {
+        self.imp
+            .invoke_reducer_with_callback(AddVillainArgs { villain }, callback)
     }
 }

@@ -18,6 +18,18 @@ pub struct VillainTableHandle<'ctx> {
     ctx: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
+/// Lifetime-aware accessor marker for the table `villain`.
+pub struct VillainTableAccessor;
+
+impl __sdk::TableAccessor<super::RemoteTables> for VillainTableAccessor {
+    type Row = Villain;
+    type Handle<'db> = VillainTableHandle<'db>;
+
+    fn get<'db>(db: &'db super::RemoteTables) -> Self::Handle<'db> {
+        db.villain()
+    }
+}
+
 #[allow(non_camel_case_types)]
 /// Extension trait for access to the table `villain`.
 ///
@@ -39,6 +51,18 @@ impl VillainTableAccess for super::RemoteTables {
 
 pub struct VillainInsertCallbackId(__sdk::CallbackId);
 pub struct VillainDeleteCallbackId(__sdk::CallbackId);
+
+impl<'ctx> __sdk::TableLike for VillainTableHandle<'ctx> {
+    type Row = Villain;
+    type EventContext = super::EventContext;
+
+    fn count(&self) -> u64 {
+        self.imp.count()
+    }
+    fn iter(&self) -> impl Iterator<Item = Villain> + '_ {
+        self.imp.iter()
+    }
+}
 
 impl<'ctx> __sdk::Table for VillainTableHandle<'ctx> {
     type Row = Villain;
@@ -78,12 +102,36 @@ impl<'ctx> __sdk::Table for VillainTableHandle<'ctx> {
     }
 }
 
-#[doc(hidden)]
-pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
-    let _table = client_cache.get_or_make_table::<Villain>("villain");
-    _table.add_unique_constraint::<u64>("space_id", |row| &row.space_id);
-    _table.add_unique_constraint::<i64>("id", |row| &row.id);
+impl<'ctx> __sdk::WithInsert for VillainTableHandle<'ctx> {
+    type InsertCallbackId = VillainInsertCallbackId;
+
+    fn on_insert(
+        &self,
+        callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
+    ) -> VillainInsertCallbackId {
+        VillainInsertCallbackId(self.imp.on_insert(Box::new(callback)))
+    }
+
+    fn remove_on_insert(&self, callback: VillainInsertCallbackId) {
+        self.imp.remove_on_insert(callback.0)
+    }
 }
+
+impl<'ctx> __sdk::WithDelete for VillainTableHandle<'ctx> {
+    type DeleteCallbackId = VillainDeleteCallbackId;
+
+    fn on_delete(
+        &self,
+        callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
+    ) -> VillainDeleteCallbackId {
+        VillainDeleteCallbackId(self.imp.on_delete(Box::new(callback)))
+    }
+
+    fn remove_on_delete(&self, callback: VillainDeleteCallbackId) {
+        self.imp.remove_on_delete(callback.0)
+    }
+}
+
 pub struct VillainUpdateCallbackId(__sdk::CallbackId);
 
 impl<'ctx> __sdk::TableWithPrimaryKey for VillainTableHandle<'ctx> {
@@ -101,15 +149,19 @@ impl<'ctx> __sdk::TableWithPrimaryKey for VillainTableHandle<'ctx> {
     }
 }
 
-#[doc(hidden)]
-pub(super) fn parse_table_update(
-    raw_updates: __ws::TableUpdate<__ws::BsatnFormat>,
-) -> __sdk::Result<__sdk::TableUpdate<Villain>> {
-    __sdk::TableUpdate::parse_table_update(raw_updates).map_err(|e| {
-        __sdk::InternalError::failed_parse("TableUpdate<Villain>", "TableUpdate")
-            .with_cause(e)
-            .into()
-    })
+impl<'ctx> __sdk::WithUpdate for VillainTableHandle<'ctx> {
+    type UpdateCallbackId = VillainUpdateCallbackId;
+
+    fn on_update(
+        &self,
+        callback: impl FnMut(&Self::EventContext, &Self::Row, &Self::Row) + Send + 'static,
+    ) -> VillainUpdateCallbackId {
+        VillainUpdateCallbackId(self.imp.on_update(Box::new(callback)))
+    }
+
+    fn remove_on_update(&self, callback: VillainUpdateCallbackId) {
+        self.imp.remove_on_update(callback.0)
+    }
 }
 
 /// Access to the `space_id` unique index on the table `villain`,
@@ -169,5 +221,39 @@ impl<'ctx> VillainIdUnique<'ctx> {
     /// if such a row is present in the client cache.
     pub fn find(&self, col_val: &i64) -> Option<Villain> {
         self.imp.find(col_val)
+    }
+}
+
+#[doc(hidden)]
+pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
+    let _table = client_cache.get_or_make_table::<Villain>("villain");
+    _table.add_unique_constraint::<u64>("space_id", |row| &row.space_id);
+    _table.add_unique_constraint::<i64>("id", |row| &row.id);
+}
+
+#[doc(hidden)]
+pub(super) fn parse_table_update(
+    raw_updates: __ws::v2::TableUpdate,
+) -> __sdk::Result<__sdk::TableUpdate<Villain>> {
+    __sdk::TableUpdate::parse_table_update(raw_updates).map_err(|e| {
+        __sdk::InternalError::failed_parse("TableUpdate<Villain>", "TableUpdate")
+            .with_cause(e)
+            .into()
+    })
+}
+
+#[allow(non_camel_case_types)]
+/// Extension trait for query builder access to the table `Villain`.
+///
+/// Implemented for [`__sdk::QueryTableAccessor`].
+pub trait villainQueryTableAccess {
+    #[allow(non_snake_case)]
+    /// Get a query builder for the table `Villain`.
+    fn villain(&self) -> __sdk::__query_builder::Table<Villain>;
+}
+
+impl villainQueryTableAccess for __sdk::QueryTableAccessor {
+    fn villain(&self) -> __sdk::__query_builder::Table<Villain> {
+        __sdk::__query_builder::Table::new("villain")
     }
 }

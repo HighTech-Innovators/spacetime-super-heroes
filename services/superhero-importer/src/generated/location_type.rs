@@ -20,3 +20,49 @@ pub struct Location {
 impl __sdk::InModule for Location {
     type Module = super::RemoteModule;
 }
+
+/// Column accessor struct for the table `Location`.
+///
+/// Provides typed access to columns for query building.
+pub struct LocationCols {
+    pub space_id: __sdk::__query_builder::Col<Location, u64>,
+    pub id: __sdk::__query_builder::Col<Location, i64>,
+    pub description: __sdk::__query_builder::Col<Location, String>,
+    pub name: __sdk::__query_builder::Col<Location, String>,
+    pub picture: __sdk::__query_builder::Col<Location, String>,
+    pub location_type: __sdk::__query_builder::Col<Location, LocationType>,
+}
+
+impl __sdk::__query_builder::HasCols for Location {
+    type Cols = LocationCols;
+    fn cols(table_name: &'static str) -> Self::Cols {
+        LocationCols {
+            space_id: __sdk::__query_builder::Col::new(table_name, "space_id"),
+            id: __sdk::__query_builder::Col::new(table_name, "id"),
+            description: __sdk::__query_builder::Col::new(table_name, "description"),
+            name: __sdk::__query_builder::Col::new(table_name, "name"),
+            picture: __sdk::__query_builder::Col::new(table_name, "picture"),
+            location_type: __sdk::__query_builder::Col::new(table_name, "location_type"),
+        }
+    }
+}
+
+/// Indexed column accessor struct for the table `Location`.
+///
+/// Provides typed access to indexed columns for query building.
+pub struct LocationIxCols {
+    pub id: __sdk::__query_builder::IxCol<Location, i64>,
+    pub space_id: __sdk::__query_builder::IxCol<Location, u64>,
+}
+
+impl __sdk::__query_builder::HasIxCols for Location {
+    type IxCols = LocationIxCols;
+    fn ix_cols(table_name: &'static str) -> Self::IxCols {
+        LocationIxCols {
+            id: __sdk::__query_builder::IxCol::new(table_name, "id"),
+            space_id: __sdk::__query_builder::IxCol::new(table_name, "space_id"),
+        }
+    }
+}
+
+impl __sdk::__query_builder::CanBeLookupTable for Location {}

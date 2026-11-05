@@ -3,3 +3,4 @@ cardamon.db
 .stdout
 .stderr
 k6_*.json
+.DS_Store

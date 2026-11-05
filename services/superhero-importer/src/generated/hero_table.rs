@@ -18,6 +18,18 @@ pub struct HeroTableHandle<'ctx> {
     ctx: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
+/// Lifetime-aware accessor marker for the table `hero`.
+pub struct HeroTableAccessor;
+
+impl __sdk::TableAccessor<super::RemoteTables> for HeroTableAccessor {
+    type Row = Hero;
+    type Handle<'db> = HeroTableHandle<'db>;
+
+    fn get<'db>(db: &'db super::RemoteTables) -> Self::Handle<'db> {
+        db.hero()
+    }
+}
+
 #[allow(non_camel_case_types)]
 /// Extension trait for access to the table `hero`.
 ///
@@ -39,6 +51,18 @@ impl HeroTableAccess for super::RemoteTables {
 
 pub struct HeroInsertCallbackId(__sdk::CallbackId);
 pub struct HeroDeleteCallbackId(__sdk::CallbackId);
+
+impl<'ctx> __sdk::TableLike for HeroTableHandle<'ctx> {
+    type Row = Hero;
+    type EventContext = super::EventContext;
+
+    fn count(&self) -> u64 {
+        self.imp.count()
+    }
+    fn iter(&self) -> impl Iterator<Item = Hero> + '_ {
+        self.imp.iter()
+    }
+}
 
 impl<'ctx> __sdk::Table for HeroTableHandle<'ctx> {
     type Row = Hero;
@@ -78,12 +102,36 @@ impl<'ctx> __sdk::Table for HeroTableHandle<'ctx> {
     }
 }
 
-#[doc(hidden)]
-pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
-    let _table = client_cache.get_or_make_table::<Hero>("hero");
-    _table.add_unique_constraint::<u64>("space_id", |row| &row.space_id);
-    _table.add_unique_constraint::<i64>("id", |row| &row.id);
+impl<'ctx> __sdk::WithInsert for HeroTableHandle<'ctx> {
+    type InsertCallbackId = HeroInsertCallbackId;
+
+    fn on_insert(
+        &self,
+        callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
+    ) -> HeroInsertCallbackId {
+        HeroInsertCallbackId(self.imp.on_insert(Box::new(callback)))
+    }
+
+    fn remove_on_insert(&self, callback: HeroInsertCallbackId) {
+        self.imp.remove_on_insert(callback.0)
+    }
 }
+
+impl<'ctx> __sdk::WithDelete for HeroTableHandle<'ctx> {
+    type DeleteCallbackId = HeroDeleteCallbackId;
+
+    fn on_delete(
+        &self,
+        callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
+    ) -> HeroDeleteCallbackId {
+        HeroDeleteCallbackId(self.imp.on_delete(Box::new(callback)))
+    }
+
+    fn remove_on_delete(&self, callback: HeroDeleteCallbackId) {
+        self.imp.remove_on_delete(callback.0)
+    }
+}
+
 pub struct HeroUpdateCallbackId(__sdk::CallbackId);
 
 impl<'ctx> __sdk::TableWithPrimaryKey for HeroTableHandle<'ctx> {
@@ -101,15 +149,19 @@ impl<'ctx> __sdk::TableWithPrimaryKey for HeroTableHandle<'ctx> {
     }
 }
 
-#[doc(hidden)]
-pub(super) fn parse_table_update(
-    raw_updates: __ws::TableUpdate<__ws::BsatnFormat>,
-) -> __sdk::Result<__sdk::TableUpdate<Hero>> {
-    __sdk::TableUpdate::parse_table_update(raw_updates).map_err(|e| {
-        __sdk::InternalError::failed_parse("TableUpdate<Hero>", "TableUpdate")
-            .with_cause(e)
-            .into()
-    })
+impl<'ctx> __sdk::WithUpdate for HeroTableHandle<'ctx> {
+    type UpdateCallbackId = HeroUpdateCallbackId;
+
+    fn on_update(
+        &self,
+        callback: impl FnMut(&Self::EventContext, &Self::Row, &Self::Row) + Send + 'static,
+    ) -> HeroUpdateCallbackId {
+        HeroUpdateCallbackId(self.imp.on_update(Box::new(callback)))
+    }
+
+    fn remove_on_update(&self, callback: HeroUpdateCallbackId) {
+        self.imp.remove_on_update(callback.0)
+    }
 }
 
 /// Access to the `space_id` unique index on the table `hero`,
@@ -169,5 +221,39 @@ impl<'ctx> HeroIdUnique<'ctx> {
     /// if such a row is present in the client cache.
     pub fn find(&self, col_val: &i64) -> Option<Hero> {
         self.imp.find(col_val)
+    }
+}
+
+#[doc(hidden)]
+pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
+    let _table = client_cache.get_or_make_table::<Hero>("hero");
+    _table.add_unique_constraint::<u64>("space_id", |row| &row.space_id);
+    _table.add_unique_constraint::<i64>("id", |row| &row.id);
+}
+
+#[doc(hidden)]
+pub(super) fn parse_table_update(
+    raw_updates: __ws::v2::TableUpdate,
+) -> __sdk::Result<__sdk::TableUpdate<Hero>> {
+    __sdk::TableUpdate::parse_table_update(raw_updates).map_err(|e| {
+        __sdk::InternalError::failed_parse("TableUpdate<Hero>", "TableUpdate")
+            .with_cause(e)
+            .into()
+    })
+}
+
+#[allow(non_camel_case_types)]
+/// Extension trait for query builder access to the table `Hero`.
+///
+/// Implemented for [`__sdk::QueryTableAccessor`].
+pub trait heroQueryTableAccess {
+    #[allow(non_snake_case)]
+    /// Get a query builder for the table `Hero`.
+    fn hero(&self) -> __sdk::__query_builder::Table<Hero>;
+}
+
+impl heroQueryTableAccess for __sdk::QueryTableAccessor {
+    fn hero(&self) -> __sdk::__query_builder::Table<Hero> {
+        __sdk::__query_builder::Table::new("hero")
     }
 }

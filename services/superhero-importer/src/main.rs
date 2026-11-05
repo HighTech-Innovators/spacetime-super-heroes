@@ -1,176 +1,175 @@
 use std::{env, time::Duration};
 
-use generated::{DbConnection, Hero, Location, Villain, add_hero, add_location, add_villain};
+use generated::{
+    DbConnection, Hero, Location, LocationType, Villain, add_hero, add_location, add_villain,
+};
 use log::{info, warn};
-use sql::{heroes::SqlHero, location::SqlLocation, villains::SqlVillain};
-use sqlx::{MySql, Postgres, mysql::MySqlPoolOptions, postgres::PgPoolOptions, query_as};
+use serde::Deserialize;
 use tokio::time::sleep;
 
 pub mod generated;
-pub mod sql;
 
 const DB_NAME: &str = "superhero-server";
+const HEROES_JSON: &str = include_str!("data/heroes.json");
+const VILLAINS_JSON: &str = include_str!("data/villains.json");
+const LOCATIONS_JSON: &str = include_str!("data/locations.json");
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CharacterRecord {
+    id: i64,
+    level: i32,
+    name: String,
+    other_name: Option<String>,
+    picture: String,
+    powers: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct LocationRecord {
+    id: i64,
+    description: String,
+    name: String,
+    picture: String,
+    #[serde(rename = "type")]
+    location_type: LocationTypeRecord,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+enum LocationTypeRecord {
+    City,
+    Planet,
+    Place,
+    Island,
+    Country,
+    Moon,
+}
+
+impl From<LocationTypeRecord> for LocationType {
+    fn from(value: LocationTypeRecord) -> Self {
+        match value {
+            LocationTypeRecord::City => Self::City,
+            LocationTypeRecord::Planet => Self::Planet,
+            LocationTypeRecord::Place => Self::Place,
+            LocationTypeRecord::Island => Self::Island,
+            LocationTypeRecord::Country => Self::Country,
+            LocationTypeRecord::Moon => Self::Moon,
+        }
+    }
+}
 
 #[tokio::main]
-async fn main()-> ! {
+async fn main() -> ! {
     env_logger::builder()
         .filter_level(log::LevelFilter::Debug)
         .init();
-    let heroes_db_url = env::var("HEROES_DB_URL")
-        .unwrap_or("postgres://superman:superman@localhost:5432/heroes_database".to_owned());
-    let villains_db_url = env::var("VILLAINS_DB_URL")
-        .unwrap_or("postgres://superman:superman@localhost:5433/villains_database".to_owned());
-    let locations_db_url = env::var("LOCATIONS_DB_URL")
-        .unwrap_or("mysql://locations:locations@localhost/locations_database".to_owned());
+
     let spacetime_db = env::var("SPACETIME_DB").unwrap_or(DB_NAME.to_owned());
     let spacetime_db_url =
         env::var("SPACETIME_DB_URL").unwrap_or("http://localhost:3000".to_owned());
 
     let db = loop {
         info!("Starting>>>>>>>>");
-        let db = connect_to_client(&spacetime_db, &spacetime_db_url);
-        match db {
+        match connect_to_client(&spacetime_db, &spacetime_db_url) {
             Ok(db) => break db,
-            Err(e) => warn!("Problem connecting: {:?}", e),
+            Err(error) => warn!("Problem connecting: {:?}", error),
         }
         sleep(Duration::from_millis(500)).await;
     };
     let db = Box::leak(Box::new(db));
     tokio::spawn(db.run_async());
 
-    import_heroes(db, &heroes_db_url).await;
-    import_villains(db, &villains_db_url).await;
-    import_locations(db, &locations_db_url).await;
+    import_heroes(db).await;
+    import_villains(db).await;
+    import_locations(db).await;
 
-    // give the outbound requests a moment to finish
+    // Keep the connection alive after the initial import.
     loop {
-            sleep(Duration::from_secs(10)).await;
+        sleep(Duration::from_secs(10)).await;
     }
 }
 
-async fn import_heroes(db: &DbConnection, url: &str) {
-    let pool = loop {
-        if let Ok(pool) = PgPoolOptions::new().connect(url).await { break pool }
-        tokio::time::sleep(Duration::from_millis(100)).await
-    };
-    info!("Hero db connected");
-    loop {
-        if let Ok(true) = test_postgres_pool(&pool, "select count(*) as c from Hero").await {
-            info!("Hero db ready");
-            break;
-        } else {
-            warn!("Hero db not ready");
-            tokio::time::sleep(Duration::from_millis(1000)).await
-        }
+async fn import_heroes(db: &DbConnection) {
+    let heroes: Vec<CharacterRecord> = load_records(HEROES_JSON, "heroes");
+    info!("Loaded {} heroes from JSON", heroes.len());
+
+    for hero in heroes {
+        let name = hero.name.clone();
+        let id = hero.id;
+        db.reducers
+            .add_hero(Hero {
+                space_id: 0,
+                id,
+                level: hero.level,
+                name: hero.name,
+                other_name: hero.other_name,
+                picture: hero.picture,
+                powers: hero.powers,
+            })
+            .unwrap();
+        println!("Hero: {} inserted. Id: {}", name, id);
+        sleep(Duration::from_millis(3)).await;
     }
-    query_as::<_, SqlHero>("select * from Hero")
-        .fetch_all(&pool)
-        .await
-        .into_iter()
-        .flat_map(|heroes| heroes.into_iter())
-        .for_each(|hero| {
-            let name = hero.name.clone();
-            let converted: Hero = hero.into();
-            let id = converted.id;
-            db.reducers.add_hero(converted).unwrap();
-            // sleep(Duration::from_millis(3));
-            println!("Hero: {} inserted. Id: {}", name, id);
-        });
-    // pool.close().await;
 }
 
-async fn test_mysql_pool(pool: &sqlx::Pool<MySql>, test_query: &str) -> Result<bool, sqlx::Error> {
-    info!("Testing mysql pool");
-    let row: (i64,) = query_as(test_query).fetch_one(pool).await?;
-    info!("Checking mysql row: {:?}", row);
-    Ok(row.0 > 0)
-}
+async fn import_villains(db: &DbConnection) {
+    let villains: Vec<CharacterRecord> = load_records(VILLAINS_JSON, "villains");
+    info!("Loaded {} villains from JSON", villains.len());
 
-async fn test_postgres_pool(
-    pool: &sqlx::Pool<Postgres>,
-    test_query: &str,
-) -> Result<bool, sqlx::Error> {
-    // let tables = sqlx::query("SELECT * FROM information_schema.tables").fetch_all(pool).await?;
-    // for table in tables {
-    //     info!("Table: {:?}", table);
-    // }
-    let row: (i64,) = query_as(test_query).fetch_one(pool).await?;
-    Ok(row.0 > 0)
-}
-
-async fn import_villains(db: &DbConnection, url: &str) {
-    let pool = loop {
-        if let Ok(pool) = PgPoolOptions::new().connect(url).await { break pool }
-        tokio::time::sleep(Duration::from_millis(100)).await
-    };
-    loop {
-        if let Ok(true) = test_postgres_pool(&pool, "select count(*) as c from Villain").await {
-            info!("Villain db ready");
-            break;
-        } else {
-            warn!("Villain db not ready");
-            tokio::time::sleep(Duration::from_millis(1000)).await
-        }
+    for villain in villains {
+        let name = villain.name.clone();
+        let id = villain.id;
+        db.reducers
+            .add_villain(Villain {
+                space_id: 0,
+                id,
+                level: villain.level,
+                name: villain.name,
+                other_name: villain.other_name,
+                picture: villain.picture,
+                powers: villain.powers,
+            })
+            .unwrap();
+        println!("Villain: {} inserted. Id: {}", name, id);
+        sleep(Duration::from_millis(3)).await;
     }
-    query_as::<_, SqlVillain>("select * from Villain")
-        .fetch_all(&pool)
-        .await
-        .into_iter()
-        .flat_map(|villains| villains.into_iter())
-        .for_each(|villain| {
-            let name = villain.name.clone();
-            let converted: Villain = villain.into();
-            let id = converted.id;
-            db.reducers.add_villain(converted).unwrap();
-            std::thread::sleep(Duration::from_millis(3));
-            println!("Villain: {} inserted. Id: {}", name, id);
-        });
-    // pool.close().await;
 }
 
-async fn import_locations(db: &DbConnection, url: &str) {
-    let pool = loop {
-        match MySqlPoolOptions::new()
-            .max_connections(30)
-            .connect(url)
-            .await
-        {
-            Ok(pool) => break pool,
-            Err(_) => {
-                warn!("Location database not up yet")
-            }
-        }
-        tokio::time::sleep(Duration::from_millis(100)).await
-    };
-    loop {
-        if let Ok(true) = test_mysql_pool(&pool, "select count(*) as c from locations").await {
-            info!("Location db ready");
-            break;
-        } else {
-            warn!("Location db not ready");
-            tokio::time::sleep(Duration::from_millis(1000)).await
-        }
+async fn import_locations(db: &DbConnection) {
+    let locations: Vec<LocationRecord> = load_records(LOCATIONS_JSON, "locations");
+    info!("Loaded {} locations from JSON", locations.len());
+
+    for location in locations {
+        let name = location.name.clone();
+        let id = location.id;
+        db.reducers
+            .add_location(Location {
+                space_id: 0,
+                id,
+                description: location.description,
+                name: location.name,
+                picture: location.picture,
+                location_type: location.location_type.into(),
+            })
+            .unwrap();
+        println!("Location: {} inserted. Id: {}", name, id);
+        sleep(Duration::from_millis(3)).await;
     }
-    query_as::<_, SqlLocation>("select * from locations")
-        .fetch_all(&pool)
-        .await
-        .into_iter()
-        .flat_map(|locations| locations.into_iter())
-        .for_each(|location| {
-            let name = location.name.clone();
-            let converted: Location = location.into();
-            let id = converted.id;
-            db.reducers.add_location(converted).unwrap();
-            std::thread::sleep(Duration::from_millis(3));
-            println!("Location: {} inserted. Id: {}", name, id);
-        });
-    // pool.close().await;
+}
+
+fn load_records<T>(json: &str, name: &str) -> Vec<T>
+where
+    T: for<'de> Deserialize<'de>,
+{
+    serde_json::from_str(json)
+        .unwrap_or_else(|error| panic!("Could not parse {name}.json: {error}"))
 }
 
 fn connect_to_client(db_name: &str, db_url: &str) -> Result<DbConnection, spacetimedb_sdk::Error> {
     info!("Connecting to spacetimedb. URL: {} DB: {}", db_url, db_name);
     DbConnection::builder()
         .with_uri(db_url)
-        .with_module_name(db_name)
+        .with_database_name(db_name)
         .build()
 }
