@@ -4,10 +4,10 @@
 FROM alpine:3.20 AS builder
 
 ARG K6_VERSION=1.3.0
-# Valid values: amd64, arm64
-ARG K6_ARCH=arm64
-ENV K6_TARBALL="k6-v${K6_VERSION}-linux-${K6_ARCH}.tar.gz"
-# ENV K6_CHECKSUM="k6-v${K6_VERSION}-linux-${K6_ARCH}.tar.gz"
+# TARGETARCH is supplied automatically by Docker/BuildKit (amd64 or arm64).
+ARG TARGETARCH
+ENV K6_TARBALL="k6-v${K6_VERSION}-linux-${TARGETARCH}.tar.gz"
+# ENV K6_CHECKSUM="k6-v${K6_VERSION}-linux-${TARGETARCH}.tar.gz"
 ENV K6_BASEURL="https://github.com/grafana/k6/releases/download/v${K6_VERSION}"
 
 RUN apk add --no-cache curl tar coreutils ca-certificates && update-ca-certificates
@@ -21,7 +21,7 @@ RUN curl -fsSLO "${K6_BASEURL}/${K6_TARBALL}" \
 
 # Make a slim artifact dir with just the binary
 RUN mkdir -p /out/bin && \
-    cp "k6-v${K6_VERSION}-linux-${K6_ARCH}/k6" /out/bin/k6 && \
+    cp "k6-v${K6_VERSION}-linux-${TARGETARCH}/k6" /out/bin/k6 && \
     chmod +x /out/bin/k6
 
 # Also keep CA bundle to copy into final image (in case the base lacks it)
