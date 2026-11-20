@@ -1,7 +1,8 @@
 FROM rust:1.100.0 AS build
 ARG TARGETPLATFORM
 WORKDIR /build
-RUN case "${TARGETPLATFORM}" in \
+RUN echo "Building for targetplatform: ${TARGETPLATFORM}" && \
+    case "${TARGETPLATFORM}" in \
         "linux/amd64") BINARY_URL="https://github.com/clockworklabs/SpacetimeDB/releases/download/v2.15.0/spacetime-x86_64-unknown-linux-gnu.tar.gz" ;; \
         "linux/arm64") BINARY_URL="https://github.com/clockworklabs/SpacetimeDB/releases/download/v2.15.0/spacetime-aarch64-unknown-linux-gnu.tar.gz" ;; \
         *) echo "Unsupported platform: ${TARGETPLATFORM}" && exit 1 ;; \
