@@ -1,18 +1,18 @@
 services:
+
   k6:
     build: k6-image
     environment:
-      K6_HOST: http://spacetimedb-client:8000 
+      K6_HOST: http://spacetimedb-client:8000
     command: ["bash", "-c", "while true; do sleep 3600; done"]
     volumes:
       - ./k6:/k6:ro
-      - ./k6/results:/results
     deploy:
       resources:
         limits:
           memory: 42M
   spacetimedb-importer:
-    build: 
+    build:
       context: services/superhero-importer
     ports:
       - "8080:3000"
@@ -38,7 +38,7 @@ services:
           memory: 128M
 
   spacetimedb-client:
-    build: 
+    build:
       context: services/superhero-client
     ports:
       - "8000:8000"
@@ -62,7 +62,7 @@ services:
       - "3000:3000"
     volumes:
       - ./spacetime-modules:/modules
-    healthcheck: 
+    healthcheck:
       test: "curl -f http://spacetimedb:3000/v1/ping"
       interval: 2s
       timeout: 1m
@@ -71,4 +71,3 @@ services:
       resources:
         limits:
           memory: 200M
-
