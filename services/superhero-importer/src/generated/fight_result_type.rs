@@ -11,8 +11,6 @@ use super::winner_type::Winner;
 #[sats(crate = __lib)]
 pub struct FightResult {
     pub id: u64,
-    pub identity: __sdk::Identity,
-    pub request_id: __sdk::Identity,
     pub fight_date: __sdk::Timestamp,
     pub winner_name: String,
     pub winner_level: i32,
@@ -36,8 +34,6 @@ impl __sdk::InModule for FightResult {
 /// Provides typed access to columns for query building.
 pub struct FightResultCols {
     pub id: __sdk::__query_builder::Col<FightResult, u64>,
-    pub identity: __sdk::__query_builder::Col<FightResult, __sdk::Identity>,
-    pub request_id: __sdk::__query_builder::Col<FightResult, __sdk::Identity>,
     pub fight_date: __sdk::__query_builder::Col<FightResult, __sdk::Timestamp>,
     pub winner_name: __sdk::__query_builder::Col<FightResult, String>,
     pub winner_level: __sdk::__query_builder::Col<FightResult, i32>,
@@ -57,8 +53,6 @@ impl __sdk::__query_builder::HasCols for FightResult {
     fn cols(table_name: &'static str) -> Self::Cols {
         FightResultCols {
             id: __sdk::__query_builder::Col::new(table_name, "id"),
-            identity: __sdk::__query_builder::Col::new(table_name, "identity"),
-            request_id: __sdk::__query_builder::Col::new(table_name, "request_id"),
             fight_date: __sdk::__query_builder::Col::new(table_name, "fight_date"),
             winner_name: __sdk::__query_builder::Col::new(table_name, "winner_name"),
             winner_level: __sdk::__query_builder::Col::new(table_name, "winner_level"),
@@ -80,7 +74,6 @@ impl __sdk::__query_builder::HasCols for FightResult {
 /// Provides typed access to indexed columns for query building.
 pub struct FightResultIxCols {
     pub id: __sdk::__query_builder::IxCol<FightResult, u64>,
-    pub identity: __sdk::__query_builder::IxCol<FightResult, __sdk::Identity>,
 }
 
 impl __sdk::__query_builder::HasIxCols for FightResult {
@@ -88,7 +81,6 @@ impl __sdk::__query_builder::HasIxCols for FightResult {
     fn ix_cols(table_name: &'static str) -> Self::IxCols {
         FightResultIxCols {
             id: __sdk::__query_builder::IxCol::new(table_name, "id"),
-            identity: __sdk::__query_builder::IxCol::new(table_name, "identity"),
         }
     }
 }

@@ -1,9 +1,9 @@
 pub mod types;
 use log::info;
 use spacetimedb::{
-    rand::Rng, Identity, ReducerContext, Table, Timestamp
+    rand::Rng, ProcedureContext, ReducerContext, Table, Timestamp, TxContext,
 };
-use types::{event, fight, hero, location, villain, Event, FightResult, Hero, Location, Villain, Winner};
+use types::{fight, hero, location, villain, FightResult, Hero, Location, Villain, Winner};
 
 #[spacetimedb::reducer(init)]
 pub fn init(_ctx: &ReducerContext) {
@@ -55,41 +55,43 @@ pub fn all_heroes(ctx: &ReducerContext) -> Vec<Hero> {
     ctx.db.hero().iter().collect()
 }
 
-pub fn random_hero(ctx: &ReducerContext) -> Hero {
+pub fn random_hero(ctx: &TxContext) -> Hero {
     let count = ctx.db.hero().count();
     if count == 0 {
         panic!("Can't pick random hero: No hero found");
     }
-    let random_index = ctx.rng().gen_range(1..count+1);
+    let random_index = ctx.rng().gen_range(1..count + 1);
     ctx.db.hero().space_id().find(random_index).unwrap()
 }
 
-pub fn random_villain(ctx: &ReducerContext) -> Villain {
+pub fn random_villain(ctx: &TxContext) -> Villain {
     let count = ctx.db.villain().count();
     if count == 0 {
         panic!("Can't pick random villain: No villains found");
     }
-    let random_index = ctx.rng().gen_range(1..count+1);
+    let random_index = ctx.rng().gen_range(1..count + 1);
     ctx.db.villain().space_id().find(random_index).unwrap()
 }
 
-pub fn random_location(ctx: &ReducerContext) -> Location {
+pub fn random_location(ctx: &TxContext) -> Location {
     let count = ctx.db.location().count();
     if count == 0 {
         panic!("Can't find random location: No location found");
     }
-    
-    let random_index = ctx.rng().gen_range(1..count+1);
+
+    let random_index = ctx.rng().gen_range(1..count + 1);
     ctx.db.location().space_id().find(random_index).unwrap()
 }
 
-pub fn execute_fight(identity: Identity, request_id: Identity, hero: Hero, villain: Villain, location: Location, timestamp: Timestamp) -> FightResult {
-    info!("Hero level: {} Villain level: {}",hero.level,villain.level);
+pub fn execute_fight(
+    hero: Hero,
+    villain: Villain,
+    location: Location,
+    timestamp: Timestamp,
+) -> FightResult {
     if hero.level > villain.level {
         FightResult {
             id: 0,
-            identity,
-            request_id,
             fight_date: timestamp,
             winner_name: hero.name,
             winner_level: hero.level,
@@ -106,8 +108,6 @@ pub fn execute_fight(identity: Identity, request_id: Identity, hero: Hero, villa
     } else {
         FightResult {
             id: 0,
-            identity,
-            request_id,
             fight_date: timestamp,
             winner_name: villain.name,
             winner_level: villain.level,
@@ -124,69 +124,18 @@ pub fn execute_fight(identity: Identity, request_id: Identity, hero: Hero, villa
     }
 }
 
-
-fn execute_random_fight_internal(ctx: &ReducerContext, identity: Identity, request_id: Identity) -> Result<(), String> {
-    info!("Execute random fight");
-    let hero = random_hero(ctx);
-
-    info!("Random hero: {}", hero.name);
-    let villain = random_villain(ctx);
-    info!("Random villain: {}", villain.name);
-    let location = random_location(ctx);
-    info!("Random location: {}", location.name);
-    let result = execute_fight(identity, request_id, hero, villain, location, ctx.timestamp);
-    let inserted = ctx.db.fight().insert(result);
-    info!("Fight result: {:?}", inserted.winner_name);
-    let fight_count = ctx.db.fight().count();
-    info!("# of fights: {}", fight_count);
-    Ok(())
+#[spacetimedb::procedure]
+pub fn execute_random_fight(ctx: &mut ProcedureContext) -> FightResult {
+    ctx.with_tx(|ctx| {
+        let hero = random_hero(ctx);
+        let villain = random_villain(ctx);
+        let location = random_location(ctx);
+        let result = execute_fight(hero, villain, location, ctx.timestamp);
+        ctx.db.fight().insert(result)
+    })
 }
 
-
-#[spacetimedb::reducer]
-pub fn execute_random_fight(ctx: &ReducerContext, identity: Identity, request_id: Identity) -> Result<(), String> {
-    // execute_random_fight_internal(ctx, identity, request_id)
-        info!("Execute random fight");
-    let hero = random_hero(ctx);
-
-    info!("Random hero: {}", hero.name);
-    let villain = random_villain(ctx);
-    info!("Random villain: {}", villain.name);
-    let location = random_location(ctx);
-    info!("Random location: {}", location.name);
-    let result = execute_fight(identity, request_id, hero, villain, location, ctx.timestamp);
-    let inserted = ctx.db.fight().insert(result);
-    info!("Fight result: {:?}", inserted.winner_name);
-    let fight_count = ctx.db.fight().count();
-    info!("# of fights: {}", fight_count);
-    Ok(())
-}
-
-#[spacetimedb::reducer]
-pub fn execute_random_fights(ctx: &ReducerContext, identity: Identity, request_id: Identity, count: u32) -> Result<(), String> {
-    for _ in 0..count {
-        execute_random_fight_internal(ctx, identity, request_id)?;
-    }
-    Ok(())
-}
-
-
-
-#[spacetimedb::reducer]
-pub fn add_event(ctx: &ReducerContext, name: String) -> Result<(), String> {
-    info!("Inserting event: {}",name);
-    ctx.db.event().insert(Event { name });
-    Ok(())
-}
-
-
-#[spacetimedb::reducer]
-pub fn add_fight_result(ctx: &ReducerContext, fight_result: FightResult) -> Result<(), String> {
-    info!(
-        "About to insert fight with winner: {}",
-        &fight_result.winner_name
-    );
-    let inserted = ctx.db.fight().insert(fight_result);
-    info!("Fight added with winning team: {:?}", inserted.winner_team);
-    Ok(())
+#[spacetimedb::procedure]
+pub fn benchmark_noop(_ctx: &mut ProcedureContext) -> u64 {
+    99
 }

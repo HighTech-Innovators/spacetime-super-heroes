@@ -54,8 +54,10 @@ services:
         limits:
           memory: 350M
   spacetimedb:
-    image: clockworklabs/spacetime
+    image: clockworklabs/spacetime:v2.15.0
     command: start
+    environment:
+      RUST_LOG: warn
     ports:
       - "3000:3000"
     volumes:

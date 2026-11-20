@@ -14,8 +14,9 @@ impl Manager for InstancePool {
     type Error = String;
 
     async fn create(&self) -> Result<Self::Type, Self::Error> {
-        info!("Created connection");
-        Ok(SpacetimeConnectionInstance::new(&self.db_name, &self.db_url).await)
+        let instance = SpacetimeConnectionInstance::new(&self.db_name, &self.db_url).await;
+        info!("Created connection instance {}", instance.instance_number);
+        Ok(instance)
     }
 
     async fn recycle(

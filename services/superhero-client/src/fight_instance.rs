@@ -1,147 +1,81 @@
-use log::info;
-use rand::{RngCore, SeedableRng};
-use rand_isaac::IsaacRng;
-use spacetimedb_sdk::{DbContext, Identity, Table};
-use tokio::sync::broadcast::{Receiver, Sender};
+use std::sync::atomic::{AtomicU32, Ordering};
 
-use crate::{
-    generated::{
-        DbConnection, FightResult, FightTableAccess, HeroTableAccess, LocationTableAccess,
-        VillainTableAccess, clear_fights, execute_random_fight, execute_random_fights,
-    },
-    types::ClientFightResult,
+use log::info;
+use spacetimedb_sdk::{Identity, Table, error::InternalError};
+
+static NEXT_INSTANCE_NUMBER: AtomicU32 = AtomicU32::new(1);
+
+use crate::generated::{
+    DbConnection, FightResult, FightTableAccess, benchmark_noop, clear_fights, execute_random_fight,
 };
 
 pub struct SpacetimeConnectionInstance {
+    pub(crate) instance_number: u32,
     pub(crate) connection: &'static DbConnection,
-    pub(crate) identity: Option<Identity>,
-    receiver: Receiver<FightResult>,
 }
 
 impl SpacetimeConnectionInstance {
     pub async fn new(db_name: &str, db_url: &str) -> Self {
-        let (sender, receiver) = tokio::sync::broadcast::channel::<FightResult>(10000);
-        let (connection, identity_receiver) = loop {
-            let (identity_sender, identity_receiver) = tokio::sync::oneshot::channel::<Identity>();
-            if let Ok(connection) = Self::connect_to_client(&db_name, &db_url, identity_sender) {
-                break (connection, identity_receiver);
-            }
-        };
+        let instance_number = NEXT_INSTANCE_NUMBER.fetch_add(1, Ordering::Relaxed);
+        let connection = Self::connect_to_client(&db_name, &db_url, instance_number).unwrap();
+
         let connection = Box::leak(Box::new(connection));
-        let mut instance = Self {
+        let instance = Self {
+            instance_number,
             connection,
-            identity: None,
-            receiver,
         };
         tokio::spawn(connection.run_async());
-        info!("Instance created");
-        instance.run_job(identity_receiver, sender).await;
-        info!("Job started");
+        info!("Instance {} created", instance_number);
+        info!("Instance {} job started", instance_number);
         instance
     }
 
-    pub async fn perform_fight(&self) -> anyhow::Result<ClientFightResult> {
-        let mut rng = IsaacRng::from_os_rng();
-        let mut id_block = [0_u8; 32];
-        rng.fill_bytes(&mut id_block);
-        let random_id = Identity::from_byte_array(id_block);
+    pub async fn noop(&self) -> anyhow::Result<u64> {
+        let (result_sender, result_receiver) =
+            tokio::sync::oneshot::channel::<Result<u64, InternalError>>();
 
-        let mut receiver = self.receiver.resubscribe();
-        self.connection
-            .reducers
-            .execute_random_fight(self.identity.unwrap(), random_id)?;
-
-        loop {
-            let result = receiver.recv().await?;
-            if random_id == result.request_id {
-                break Ok(result.into());
-            }
-        }
+        self.connection.procedures.benchmark_noop_then(|_ctx, e| {
+            result_sender.send(e).unwrap();
+        });
+        Ok(result_receiver.into_future().await??)
     }
 
-    pub async fn perform_fights(&self, count: u32) -> anyhow::Result<Vec<ClientFightResult>> {
-        let mut rng = IsaacRng::from_os_rng();
-        let mut id_block = [0_u8; 32];
-        rng.fill_bytes(&mut id_block);
-        let random_id = Identity::from_byte_array(id_block);
+    pub async fn perform_fight(&self) -> anyhow::Result<FightResult> {
+        let (result_sender, result_receiver) =
+            tokio::sync::oneshot::channel::<Result<FightResult, InternalError>>();
 
-        let mut receiver = self.receiver.resubscribe();
         self.connection
-            .reducers
-            .execute_random_fights(self.identity.unwrap(), random_id, count)?;
-
-        let mut results = Vec::with_capacity(count as usize);
-        loop {
-            let result = receiver.recv().await?;
-            if random_id == result.request_id {
-                results.push(result.into());
-                if results.len() as u32 == count {
-                    break Ok(results);
-                }
-            }
-        }
+            .procedures
+            .execute_random_fight_then(|_ctx, e| {
+                result_sender.send(e).unwrap();
+            });
+        Ok(result_receiver.into_future().await??)
     }
 
     pub async fn clear_fights(&self) -> anyhow::Result<()> {
         let before = self.connection.db.fight().count();
         info!(
-            "Identity: {} Clearing {} fights",
-            self.identity.unwrap(),
+            "Instance {} clearing {} fights",
+            self.instance_number,
             before
         );
         self.connection.reducers.clear_fights()?;
         Ok(())
     }
 
-    // pub async fn
-    async fn run_job(
-        &mut self,
-        identity_receiver: tokio::sync::oneshot::Receiver<Identity>,
-        sender: Sender<FightResult>,
-    ) {
-        let identity = identity_receiver.await.unwrap();
-        self.identity = Some(identity);
-        self.connection
-            .subscription_builder()
-            .on_applied(move |e| {
-                info!("Subscription applied for identity 0x{}", identity);
-                info!("Number of fights: {}", e.db.fight().count());
-                info!("Number of heroes: {}", e.db.hero().count());
-                info!("Number of villains: {}", e.db.villain().count());
-                info!("Number of locations: {}", e.db.location().count());
-            })
-            // .subscribe_to_all_tables();
-            .subscribe(
-                // Actually, I only actually need to listen for fight, as I'm only defering random heroes, villains and locations to the reducer
-                [
-                    format!("SELECT * FROM fight WHERE identity = 0x{}", identity),
-                    "SELECT * FROM hero".to_owned(),
-                    "SELECT * FROM villain".to_owned(),
-                    "SELECT * FROM location".to_owned(),
-                ],
-            );
-
-        self.connection
-            .db
-            .fight()
-            .on_insert(move |_ctx, fight_result| {
-                // info!("Fight result: {:?}", fight_result);
-                sender.send(fight_result.clone()).unwrap();
-            });
-    }
-
     fn connect_to_client(
         db_name: &str,
         db_url: &str,
-        identity_sender: tokio::sync::oneshot::Sender<Identity>,
+        instance_number: u32,
     ) -> Result<DbConnection, spacetimedb_sdk::Error> {
-        info!("Connecting to spacetimedb. URL: {} DB: {}", db_url, db_name);
+        info!(
+            "Instance {} connecting to spacetimedb. URL: {} DB: {}",
+            instance_number, db_url, db_name
+        );
         DbConnection::builder()
             .with_uri(db_url)
             .with_database_name(db_name)
-            .on_connect(move |_db, identity, _token| {
-                identity_sender.send(identity).unwrap();
-            })
+            .with_confirmed_reads(false)
             .build()
     }
 }

@@ -38,11 +38,6 @@ pub enum LocationType {
     MOON,
 }
 
-#[spacetimedb::table(accessor = event, public)]
-pub struct Event {
-    pub name: String,
-}
-
 #[spacetimedb::table(accessor = location, public)]
 pub struct Location {
     #[primary_key]
@@ -71,9 +66,6 @@ pub struct FightResult {
     #[auto_inc]
     #[unique]
     pub id: u64,
-    #[index(btree)]
-    pub identity: Identity,
-    pub request_id: Identity,
     pub fight_date: Timestamp, // use timestamp data structure?
     pub winner_name: String,
     pub winner_level: i32,

@@ -7,9 +7,6 @@ use crate::generated::{FightLocation, FightResult, LocationType, Winner};
 #[serde(rename_all = "camelCase")]
 pub struct ClientFightResult {
     pub id: u64,
-    pub identity: Identity,
-    pub request_id: Identity,
-    // pub fight_date: Timestamp, // use timestamp data structure?
     pub winner_name: String,
     pub winner_level: i32,
     pub winner_powers: String,
@@ -88,8 +85,6 @@ impl From<FightResult> for ClientFightResult {
     fn from(value: FightResult) -> Self {
         Self {
             id: value.id,
-            identity: value.identity,
-            request_id: value.request_id,
             winner_name: value.winner_name,
             winner_level: value.winner_level,
             winner_powers: value.winner_powers,
