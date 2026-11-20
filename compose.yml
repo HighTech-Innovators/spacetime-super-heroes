@@ -61,7 +61,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./spacetime-modules:/modules
+      - ./spacetime-modules:/modules:ro
     healthcheck:
       test: "curl -f http://spacetimedb:3000/v1/ping"
       interval: 2s
