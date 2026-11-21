@@ -1,6 +1,10 @@
 FROM rust:1.100.0 AS build
 ARG TARGETPLATFORM
 WORKDIR /build
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends binaryen ca-certificates curl tar && \
+    rm -rf /var/lib/apt/lists/* && \
+    wasm-opt --version
 RUN echo "Building for targetplatform: ${TARGETPLATFORM}" && \
     case "${TARGETPLATFORM}" in \
         "linux/amd64") BINARY_URL="https://github.com/clockworklabs/SpacetimeDB/releases/download/v2.15.0/spacetime-x86_64-unknown-linux-gnu.tar.gz" ;; \
