@@ -1,15 +1,13 @@
-use std::{env, time::{Duration, Instant}};
+use std::time::Instant;
 
 use async_trait::async_trait;
 use clap::Parser;
-use deadpool::managed::Pool;
 use log::info;
 
 const DB_NAME: &str = "superhero-server";
 
 use rlt::{cli::BenchCli, BenchSuite, IterInfo, IterReport, Status};
-use superhero_client::{fight_instance::SpacetimeConnectionInstance, pool::InstancePool};
-use tokio::time::sleep;
+use superhero_client::fight_instance::SpacetimeConnectionInstance;
 
 #[derive(Parser, Clone)]
 struct SuperheroBench {
@@ -42,7 +40,7 @@ async fn bench(
             info!("Error: {:?}", e);
             Ok(IterReport { duration: start.elapsed(), items: 0, status: Status::error(0), bytes: 0 })
         }
-        Ok(res) => {
+        Ok(_res) => {
             // info!("Fight won by: {}", res.winner_name);
             let duration = start.elapsed();
             Ok(IterReport { duration, items: 1, status: Status::success(0), bytes: 0 })

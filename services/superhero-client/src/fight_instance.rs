@@ -1,7 +1,7 @@
 use std::sync::atomic::{AtomicU32, Ordering};
 
 use log::info;
-use spacetimedb_sdk::{Identity, Table, error::InternalError};
+use spacetimedb_sdk::{Table, error::InternalError};
 
 static NEXT_INSTANCE_NUMBER: AtomicU32 = AtomicU32::new(1);
 

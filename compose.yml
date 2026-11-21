@@ -35,7 +35,7 @@ services:
         echo 'ABOUT TO DEPLOY' &&
         ./spacetimedb-cli publish -s 'http://spacetimedb:3000' --anonymous
         --module-path superhero-server -y superhero-server &&
-        ./spacetimedb-cli logs -s 'http://spacetimedb:3000' -f superhero-server
+        tail -f /dev/null
     depends_on:
       spacetimedb:
         condition: service_healthy

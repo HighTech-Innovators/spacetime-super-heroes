@@ -1,4 +1,4 @@
-use spacetimedb::{Identity, SpacetimeType, Timestamp};
+use spacetimedb::{SpacetimeType, Timestamp};
 
 #[spacetimedb::table(accessor = hero, public)]
 pub struct Hero {

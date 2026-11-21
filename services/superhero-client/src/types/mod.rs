@@ -1,5 +1,4 @@
 use serde::Serialize;
-use spacetimedb_sdk::Identity;
 
 use crate::generated::{FightLocation, FightResult, LocationType, Winner};
 
