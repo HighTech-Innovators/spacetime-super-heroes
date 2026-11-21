@@ -10,7 +10,7 @@ pub mod add_hero_reducer;
 pub mod add_location_reducer;
 pub mod add_villain_reducer;
 pub mod benchmark_noop_procedure;
-pub mod clear_fights_reducer;
+pub mod clear_fights_procedure;
 pub mod execute_random_fight_procedure;
 pub mod fight_location_type;
 pub mod fight_result_type;
@@ -28,7 +28,7 @@ pub use add_hero_reducer::add_hero;
 pub use add_location_reducer::add_location;
 pub use add_villain_reducer::add_villain;
 pub use benchmark_noop_procedure::benchmark_noop;
-pub use clear_fights_reducer::clear_fights;
+pub use clear_fights_procedure::clear_fights;
 pub use execute_random_fight_procedure::execute_random_fight;
 pub use fight_location_type::FightLocation;
 pub use fight_result_type::FightResult;
@@ -53,7 +53,6 @@ pub enum Reducer {
     AddHero { hero: Hero },
     AddLocation { location: Location },
     AddVillain { villain: Villain },
-    ClearFights,
 }
 
 impl __sdk::InModule for Reducer {
@@ -66,7 +65,6 @@ impl __sdk::Reducer for Reducer {
             Reducer::AddHero { .. } => "add_hero",
             Reducer::AddLocation { .. } => "add_location",
             Reducer::AddVillain { .. } => "add_villain",
-            Reducer::ClearFights => "clear_fights",
             _ => unreachable!(),
         }
     }
@@ -85,9 +83,6 @@ impl __sdk::Reducer for Reducer {
                 __sats::bsatn::to_vec(&add_villain_reducer::AddVillainArgs {
                     villain: villain.clone(),
                 })
-            }
-            Reducer::ClearFights => {
-                __sats::bsatn::to_vec(&clear_fights_reducer::ClearFightsArgs {})
             }
             _ => unreachable!(),
         }
@@ -495,19 +490,19 @@ impl __sdk::SubscriptionHandle for SubscriptionHandle {
 /// either a [`DbConnection`] or an [`EventContext`] and operate on either.
 pub trait RemoteDbContext:
     __sdk::DbContext<
-    DbView = RemoteTables,
-    Reducers = RemoteReducers,
-    SubscriptionBuilder = __sdk::SubscriptionBuilder<RemoteModule>,
->
+        DbView = RemoteTables,
+        Reducers = RemoteReducers,
+        SubscriptionBuilder = __sdk::SubscriptionBuilder<RemoteModule>,
+    >
 {
 }
 impl<
-        Ctx: __sdk::DbContext<
+    Ctx: __sdk::DbContext<
             DbView = RemoteTables,
             Reducers = RemoteReducers,
             SubscriptionBuilder = __sdk::SubscriptionBuilder<RemoteModule>,
         >,
-    > RemoteDbContext for Ctx
+> RemoteDbContext for Ctx
 {
 }
 

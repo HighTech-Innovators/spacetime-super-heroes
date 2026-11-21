@@ -1,12 +1,12 @@
 use std::sync::atomic::{AtomicU32, Ordering};
 
 use log::info;
-use spacetimedb_sdk::{Table, error::InternalError};
+use spacetimedb_sdk::error::InternalError;
 
 static NEXT_INSTANCE_NUMBER: AtomicU32 = AtomicU32::new(1);
 
 use crate::generated::{
-    DbConnection, FightResult, FightTableAccess, benchmark_noop, clear_fights, execute_random_fight,
+    DbConnection, FightResult, benchmark_noop, clear_fights, execute_random_fight,
 };
 
 pub struct SpacetimeConnectionInstance {
@@ -53,13 +53,18 @@ impl SpacetimeConnectionInstance {
     }
 
     pub async fn clear_fights(&self) -> anyhow::Result<()> {
-        let before = self.connection.db.fight().count();
+        let (result_sender, result_receiver) =
+            tokio::sync::oneshot::channel::<Result<u64, InternalError>>();
+        self.connection
+            .procedures
+            .clear_fights_then(move |_ctx, result| {
+                result_sender.send(result).unwrap();
+            });
+        let cleared = result_receiver.await??;
         info!(
-            "Instance {} clearing {} fights",
-            self.instance_number,
-            before
+            "Instance {} cleared {} fights",
+            self.instance_number, cleared
         );
-        self.connection.reducers.clear_fights()?;
         Ok(())
     }
 

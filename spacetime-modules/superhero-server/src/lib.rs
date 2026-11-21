@@ -1,8 +1,6 @@
 pub mod types;
 use log::info;
-use spacetimedb::{
-    rand::Rng, ProcedureContext, ReducerContext, Table, Timestamp, TxContext,
-};
+use spacetimedb::{rand::Rng, ProcedureContext, ReducerContext, Table, Timestamp, TxContext};
 use types::{fight, hero, location, villain, FightResult, Hero, Location, Villain, Winner};
 
 #[spacetimedb::reducer(init)]
@@ -41,14 +39,16 @@ pub fn add_location(ctx: &ReducerContext, location: Location) -> Result<(), Stri
     Ok(())
 }
 
-#[spacetimedb::reducer]
-pub fn clear_fights(ctx: &ReducerContext) -> Result<(), String> {
-    let row_count = ctx.db.fight().count();
-    for row in ctx.db.fight().iter() {
-        ctx.db.fight().delete(row);
-    }
-    info!("{} fights cleared", row_count);
-    Ok(())
+#[spacetimedb::procedure]
+pub fn clear_fights(ctx: &mut ProcedureContext) -> u64 {
+    ctx.with_tx(|ctx| {
+        let row_count = ctx.db.fight().count();
+        for row in ctx.db.fight().iter() {
+            ctx.db.fight().delete(row);
+        }
+        info!("{} fights cleared", row_count);
+        row_count
+    })
 }
 
 pub fn all_heroes(ctx: &ReducerContext) -> Vec<Hero> {
