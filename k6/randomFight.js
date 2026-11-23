@@ -4,13 +4,7 @@ import { check } from 'k6';
 const host = __ENV.K6_HOST || "http://localhost:8080"
 
 export function randomFight() {
-    const json_post_header = {
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    };
-
-    var fight_response = http.post(host + "/random_fight", json_post_header);
+    var fight_response = http.post(host + "/random_fight", null);
     //console.log(JSON.stringify(fight_response));
     check(fight_response, {
         'fight result is 200': (r) => r.status === 200
@@ -41,13 +35,7 @@ export function noop() {
 }
 
 export function randomFights(count) {
-    const json_post_header = {
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    };
-
-    var fight_response = http.post(host + "/random_fights/" + count, json_post_header);
+    var fight_response = http.post(host + "/random_fights/" + count, null);
     //console.log(JSON.stringify(fight_response));
     check(fight_response, {
         'fight result is 200': (r) => r.status === 200
