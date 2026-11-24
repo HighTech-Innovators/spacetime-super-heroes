@@ -52,7 +52,7 @@ impl SpacetimeConnectionInstance {
         Ok(result_receiver.into_future().await??)
     }
 
-    pub async fn clear_fights(&self) -> anyhow::Result<()> {
+    pub async fn clear_fights(&self) -> anyhow::Result<u64> {
         let (result_sender, result_receiver) =
             tokio::sync::oneshot::channel::<Result<u64, InternalError>>();
         self.connection
@@ -65,7 +65,7 @@ impl SpacetimeConnectionInstance {
             "Instance {} cleared {} fights",
             self.instance_number, cleared
         );
-        Ok(())
+        Ok(cleared)
     }
 
     fn connect_to_client(

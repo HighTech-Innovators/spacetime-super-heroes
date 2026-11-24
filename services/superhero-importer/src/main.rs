@@ -5,6 +5,7 @@ use generated::{
 };
 use log::{info, warn};
 use serde::Deserialize;
+use spacetimedb_sdk::DbContext;
 use tokio::time::sleep;
 
 pub mod generated;
@@ -60,7 +61,7 @@ impl From<LocationTypeRecord> for LocationType {
 }
 
 #[tokio::main]
-async fn main() -> ! {
+async fn main() -> anyhow::Result<()> {
     env_logger::builder()
         .filter_level(log::LevelFilter::Debug)
         .init();
@@ -70,7 +71,7 @@ async fn main() -> ! {
         env::var("SPACETIME_DB_URL").unwrap_or("http://localhost:3000".to_owned());
 
     let db = loop {
-        info!("Starting>>>>>>>>");
+        info!("Connecting...");
         match connect_to_client(&spacetime_db, &spacetime_db_url) {
             Ok(db) => break db,
             Err(error) => warn!("Problem connecting: {:?}", error),
@@ -80,17 +81,19 @@ async fn main() -> ! {
     let db = Box::leak(Box::new(db));
     tokio::spawn(db.run_async());
 
-    import_heroes(db).await;
-    import_villains(db).await;
-    import_locations(db).await;
+    import_heroes(db).await
+        .map_err(|_| anyhow::anyhow!("Error importing"))?;
+    import_villains(db).await
+        .map_err(|_| anyhow::anyhow!("Error importing"))?;
+    import_locations(db).await
+        .map_err(|_| anyhow::anyhow!("Error importing"))?;
 
-    // Keep the connection alive after the initial import.
-    loop {
-        sleep(Duration::from_secs(10)).await;
-    }
+    db.disconnect()
+        .map_err(|e| anyhow::anyhow!("Error disconnecting"))
+
 }
 
-async fn import_heroes(db: &DbConnection) {
+async fn import_heroes(db: &DbConnection)->anyhow::Result<()> {
     let heroes: Vec<CharacterRecord> = load_records(HEROES_JSON, "heroes");
     info!("Loaded {} heroes from JSON", heroes.len());
 
@@ -106,14 +109,13 @@ async fn import_heroes(db: &DbConnection) {
                 other_name: hero.other_name,
                 picture: hero.picture,
                 powers: hero.powers,
-            })
-            .unwrap();
+            })?;
         println!("Hero: {} inserted. Id: {}", name, id);
-        sleep(Duration::from_millis(3)).await;
     }
+    Ok(())
 }
 
-async fn import_villains(db: &DbConnection) {
+async fn import_villains(db: &DbConnection)->anyhow::Result<()> {
     let villains: Vec<CharacterRecord> = load_records(VILLAINS_JSON, "villains");
     info!("Loaded {} villains from JSON", villains.len());
 
@@ -132,11 +134,11 @@ async fn import_villains(db: &DbConnection) {
             })
             .unwrap();
         println!("Villain: {} inserted. Id: {}", name, id);
-        sleep(Duration::from_millis(3)).await;
     }
+    Ok(())
 }
 
-async fn import_locations(db: &DbConnection) {
+async fn import_locations(db: &DbConnection)->anyhow::Result<()> {
     let locations: Vec<LocationRecord> = load_records(LOCATIONS_JSON, "locations");
     info!("Loaded {} locations from JSON", locations.len());
 
@@ -156,6 +158,7 @@ async fn import_locations(db: &DbConnection) {
         println!("Location: {} inserted. Id: {}", name, id);
         sleep(Duration::from_millis(3)).await;
     }
+    Ok(())
 }
 
 fn load_records<T>(json: &str, name: &str) -> Vec<T>

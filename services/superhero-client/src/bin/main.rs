@@ -66,8 +66,7 @@ async fn benchmark_noop(State(state): State<AppState>) -> Json<u64> {
 }
 
 #[axum::debug_handler]
-async fn clear_fights(State(state): State<AppState>) -> String {
+async fn clear_fights(State(state): State<AppState>) -> Json<u64> {
     let instance = state.pool.get().await.unwrap();
-    instance.clear_fights().await.unwrap(); // TODO handle properly
-    "Fights cleared".to_owned()
+    Json(instance.clear_fights().await.unwrap())
 }

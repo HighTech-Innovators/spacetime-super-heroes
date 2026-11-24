@@ -19,23 +19,38 @@ pub fn identity_disconnected(_ctx: &ReducerContext) {
 }
 
 #[spacetimedb::reducer]
-pub fn add_hero(ctx: &ReducerContext, hero: Hero) -> Result<(), String> {
-    let inserted = ctx.db.hero().insert(hero);
-    info!("Hero added: {} id: {}", inserted.name, inserted.id);
+pub fn add_hero(ctx: &ReducerContext, mut hero: Hero) -> Result<(), String> {
+    let upserted = if let Some(existing) = ctx.db.hero().id().find(hero.id) {
+        hero.space_id = existing.space_id;
+        ctx.db.hero().space_id().update(hero)
+    } else {
+        ctx.db.hero().insert(hero)
+    };
+    info!("Hero upserted: {} id: {}", upserted.name, upserted.id);
     Ok(())
 }
 
 #[spacetimedb::reducer]
-pub fn add_villain(ctx: &ReducerContext, villain: Villain) -> Result<(), String> {
-    let inserted = ctx.db.villain().insert(villain);
-    info!("Hero added: {} id: {} ", inserted.name, inserted.id);
+pub fn add_villain(ctx: &ReducerContext, mut villain: Villain) -> Result<(), String> {
+    let upserted = if let Some(existing) = ctx.db.villain().id().find(villain.id) {
+        villain.space_id = existing.space_id;
+        ctx.db.villain().space_id().update(villain)
+    } else {
+        ctx.db.villain().insert(villain)
+    };
+    info!("Villain upserted: {} id: {}", upserted.name, upserted.id);
     Ok(())
 }
 
 #[spacetimedb::reducer]
-pub fn add_location(ctx: &ReducerContext, location: Location) -> Result<(), String> {
-    let inserted = ctx.db.location().insert(location);
-    info!("Hero added: {} id: {}", inserted.name, inserted.id);
+pub fn add_location(ctx: &ReducerContext, mut location: Location) -> Result<(), String> {
+    let upserted = if let Some(existing) = ctx.db.location().id().find(location.id) {
+        location.space_id = existing.space_id;
+        ctx.db.location().space_id().update(location)
+    } else {
+        ctx.db.location().insert(location)
+    };
+    info!("Location upserted: {} id: {}", upserted.name, upserted.id);
     Ok(())
 }
 

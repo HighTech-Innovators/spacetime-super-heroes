@@ -23,23 +23,25 @@ pub trait clear_fights {
 
     fn clear_fights_then(
         &self,
-        callback: impl FnOnce(&super::ProcedureEventContext, Result<u64, __sdk::InternalError>)
-        + Send
-        + 'static,
+
+        __callback: impl FnOnce(&super::ProcedureEventContext, Result<u64, __sdk::InternalError>)
+            + Send
+            + 'static,
     );
 }
 
 impl clear_fights for super::RemoteProcedures {
     fn clear_fights_then(
         &self,
-        callback: impl FnOnce(&super::ProcedureEventContext, Result<u64, __sdk::InternalError>)
-        + Send
-        + 'static,
+
+        __callback: impl FnOnce(&super::ProcedureEventContext, Result<u64, __sdk::InternalError>)
+            + Send
+            + 'static,
     ) {
         self.imp.invoke_procedure_with_callback::<_, u64>(
             "clear_fights",
             ClearFightsArgs {},
-            callback,
+            __callback,
         );
     }
 }
