@@ -1,0 +1,16 @@
+---
+name: Superheroes k6 scenario
+author: Frank Lyaruu
+description: Superheroes (Rust) k6 load testing scenario )
+compose-file: !include compose.yml
+ignore-unsupported-compose: true
+flow:
+  - name: Spacetime Local
+    container: spacetimedb-client
+    commands:
+      - type: console
+        command: /app/target/release/superhero-bench -d 10s -c 15 --db-url http://spacetimedb:3000 -q
+        note: Starting local load bench for 10s
+        log-stdout: true
+        read-notes-stdout: true
+        read-sci-stdout: true
