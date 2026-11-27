@@ -19,6 +19,7 @@ services:
     environment:
       SPACETIME_DB: "superhero-server"
       SPACETIME_DB_URL: "http://spacetimedb:3000"
+      IMPORTER_KEEP_ALIVE: "true"
     depends_on:
       spacetimedb:
         condition: service_healthy

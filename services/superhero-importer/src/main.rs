@@ -69,6 +69,9 @@ async fn main() -> anyhow::Result<()> {
     let spacetime_db = env::var("SPACETIME_DB").unwrap_or(DB_NAME.to_owned());
     let spacetime_db_url =
         env::var("SPACETIME_DB_URL").unwrap_or("http://localhost:3000".to_owned());
+    let keep_alive = env::var("IMPORTER_KEEP_ALIVE")
+        .map(|value| value.eq_ignore_ascii_case("true"))
+        .unwrap_or(false);
 
     let db = loop {
         info!("Connecting...");
@@ -81,41 +84,48 @@ async fn main() -> anyhow::Result<()> {
     let db = Box::leak(Box::new(db));
     tokio::spawn(db.run_async());
 
-    import_heroes(db).await
+    import_heroes(db)
+        .await
         .map_err(|_| anyhow::anyhow!("Error importing"))?;
-    import_villains(db).await
+    import_villains(db)
+        .await
         .map_err(|_| anyhow::anyhow!("Error importing"))?;
-    import_locations(db).await
+    import_locations(db)
+        .await
         .map_err(|_| anyhow::anyhow!("Error importing"))?;
+    if keep_alive {
+        info!("IMPORTER_KEEP_ALIVE=true; keeping importer connection alive");
+        loop {
+            sleep(Duration::from_secs(10)).await;
+        }
+    }
 
     db.disconnect()
-        .map_err(|e| anyhow::anyhow!("Error disconnecting"))
-
+        .map_err(|_| anyhow::anyhow!("Error disconnecting"))
 }
 
-async fn import_heroes(db: &DbConnection)->anyhow::Result<()> {
+async fn import_heroes(db: &DbConnection) -> anyhow::Result<()> {
     let heroes: Vec<CharacterRecord> = load_records(HEROES_JSON, "heroes");
     info!("Loaded {} heroes from JSON", heroes.len());
 
     for hero in heroes {
         let name = hero.name.clone();
         let id = hero.id;
-        db.reducers
-            .add_hero(Hero {
-                space_id: 0,
-                id,
-                level: hero.level,
-                name: hero.name,
-                other_name: hero.other_name,
-                picture: hero.picture,
-                powers: hero.powers,
-            })?;
+        db.reducers.add_hero(Hero {
+            space_id: 0,
+            id,
+            level: hero.level,
+            name: hero.name,
+            other_name: hero.other_name,
+            picture: hero.picture,
+            powers: hero.powers,
+        })?;
         println!("Hero: {} inserted. Id: {}", name, id);
     }
     Ok(())
 }
 
-async fn import_villains(db: &DbConnection)->anyhow::Result<()> {
+async fn import_villains(db: &DbConnection) -> anyhow::Result<()> {
     let villains: Vec<CharacterRecord> = load_records(VILLAINS_JSON, "villains");
     info!("Loaded {} villains from JSON", villains.len());
 
@@ -138,7 +148,7 @@ async fn import_villains(db: &DbConnection)->anyhow::Result<()> {
     Ok(())
 }
 
-async fn import_locations(db: &DbConnection)->anyhow::Result<()> {
+async fn import_locations(db: &DbConnection) -> anyhow::Result<()> {
     let locations: Vec<LocationRecord> = load_records(LOCATIONS_JSON, "locations");
     info!("Loaded {} locations from JSON", locations.len());
 
