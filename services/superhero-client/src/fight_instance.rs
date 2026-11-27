@@ -47,7 +47,13 @@ impl SpacetimeConnectionInstance {
         self.connection
             .procedures
             .execute_random_fight_then(|_ctx, e| {
-                result_sender.send(e).unwrap();
+                match result_sender.send(e) {
+                    Ok(_) => {}
+                    Err(_) => {
+                        info!("Error confirming result, run aborted");
+                    }
+                }
+                // }
             });
         Ok(result_receiver.into_future().await??)
     }
