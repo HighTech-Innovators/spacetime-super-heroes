@@ -9,7 +9,7 @@ flow:
     container: spacetimedb-client
     commands:
       - type: console
-        command: /app/target/release/superhero-bench -d 10s -c 15 --db-url http://spacetimedb:3000 -q
+        command: /app/target/release/superhero-local --duration-secs 30 --catch-up-grace-millis 500 --db-url http://spacetimedb:3000 --rate 1000
         note: Starting local load bench for 10s
         log-stdout: true
         read-notes-stdout: true
