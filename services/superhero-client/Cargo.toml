@@ -26,3 +26,7 @@ path = "src/bin/main.rs"
 [[bin]]
 name = "superhero-bench"
 path = "src/bin/main_bench.rs"
+
+[[bin]]
+name = "superhero-local"
+path = "src/bin/main_local_rate.rs"
